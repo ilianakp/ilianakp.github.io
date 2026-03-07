@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project — Iliana Papanikolaou</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body style="overflow-y: auto; background: linear-gradient(160deg, #1a0e0e 0%, #0d0a0a 100%);">
+
+    <nav class="page-nav">
+      <a href="/">index</a>
+      <a href="/info.html">info</a>
+    </nav>
+
+    <!-- This div is filled by the script below -->
+    <div class="page-body" id="project-content">
+      <p>Loading…</p>
+    </div>
+
+    <script type="module">
+      // Read the project slug from the URL: /project.html?id=slug
+      // This is like reading a URL parameter in C# with HttpContext.Request.Query["id"]
+      import { projects } from '/src/projects.js';
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      const project = projects.find((p) => p.slug === id);
+      const container = document.getElementById('project-content');
+
+      if (!project) {
+        container.innerHTML = `
+          <h1>Project not found</h1>
+          <p><a href="/" style="color:inherit">← back to index</a></p>
+        `;
+      } else {
+        // Update page title
+        document.title = `${project.title} — Iliana Papanikolaou`;
+
+        // Render project content
+        container.innerHTML = `
+          <h1>${project.title}</h1>
+          <span class="tag">${project.category}</span>
+
+          <img
+            class="project-image"
+            src="${project.thumbnail}"
+            alt="${project.title}"
+            onerror="this.style.display='none'"
+          />
+
+          <p>${project.description}</p>
+
+          <p style="margin-top: 48px;">
+            <a href="/" style="color: var(--color-accent); font-size: 13px; letter-spacing: 0.04em;">
+              ← back to index
+            </a>
+          </p>
+        `;
+      }
+    </script>
+
+  </body>
+</html>

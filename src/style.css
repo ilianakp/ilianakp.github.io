@@ -1,0 +1,196 @@
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #0d0a0a;
+  --color-text: rgba(255, 255, 255, 0.85);
+  --color-accent: rgba(255, 255, 255, 0.45);
+  --color-active: #ffffff;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden; /* the canvas fills the screen; no scrollbars */
+}
+
+/* ── Canvas container ─────────────────────────────────────────────────────── */
+
+#canvas-container {
+  position: fixed;
+  inset: 0; /* shorthand for top/right/bottom/left: 0 */
+  z-index: 0;
+}
+
+#canvas-container canvas {
+  display: block;
+}
+
+/* ── Navigation overlay ───────────────────────────────────────────────────── */
+
+#nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  /* subtle top gradient so text is readable over any 3D content */
+  background: linear-gradient(to bottom, rgba(13, 10, 10, 0.7) 0%, transparent 100%);
+}
+
+.nav-left a,
+.nav-right .filter-btn {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.nav-left {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-left a:hover {
+  color: var(--color-active);
+}
+
+.nav-right {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Category filter buttons */
+.filter-btn {
+  font-style: italic;
+  color: var(--color-accent);
+  transition: color 0.2s;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  color: var(--color-active);
+}
+
+/* ── Hover label ─────────────────────────────────────────────────────────── */
+
+#card-label {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--color-active);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Info & project pages (shared) ───────────────────────────────────────── */
+
+.page-body {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #1a0e0e 0%, #0d0a0a 100%);
+  color: var(--color-text);
+  padding: 100px 60px 80px;
+  max-width: 800px;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.page-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 18px 28px;
+  display: flex;
+  gap: 20px;
+  background: linear-gradient(to bottom, rgba(13, 10, 10, 0.85) 0%, transparent 100%);
+}
+
+.page-nav a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.page-nav a:hover {
+  color: var(--color-active);
+}
+
+h1 {
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 32px;
+}
+
+p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-text);
+  margin-bottom: 18px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  margin-right: 10px;
+}
+
+.project-image {
+  width: 100%;
+  margin: 32px 0;
+  display: block;
+  border-radius: 2px;
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  #nav {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .page-body {
+    padding: 90px 24px 60px;
+  }
+}

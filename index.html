@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Iliana Papanikolaou — architect, artist, creative developer" />
+    <title>Iliana Papanikolaou</title>
+  </head>
+  <body>
+
+    <!-- The Three.js canvas will be appended here by main.js -->
+    <div id="canvas-container"></div>
+
+    <!-- Navigation overlay (sits on top of the 3D canvas) -->
+    <nav id="nav">
+      <div class="nav-left">
+        <a href="/">index</a>
+        <a href="/info.html">info</a>
+      </div>
+      <div class="nav-right">
+        <!-- data-category must match the category strings in projects.js -->
+        <button class="filter-btn active" data-category="all">all</button>
+        <button class="filter-btn" data-category="interactive">interactive</button>
+        <button class="filter-btn" data-category="data&visuals">data&amp;visuals</button>
+        <button class="filter-btn" data-category="research">research</button>
+      </div>
+    </nav>
+
+    <!-- Project title that appears when hovering a card -->
+    <div id="card-label"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
