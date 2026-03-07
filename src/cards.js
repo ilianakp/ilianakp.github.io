@@ -13,10 +13,11 @@ const CARD_WIDTH = 80;   // world-space units wide
 const CARD_HEIGHT = 55;  // world-space units tall
 
 // Placeholder color per category — shown before real images are added
+// Desaturated pastels that read well on the warm off-white background
 const PLACEHOLDER_COLORS = {
-  'interactive': 0x8b3a3a,
-  'data&visuals': 0x3a5c8b,
-  'research': 0x3a7a4a,
+  'interactive': 0xd4b8b8,  // dusty rose
+  'data&visuals': 0xb8c8d4, // pale blue-gray
+  'research': 0xc0d4bc,     // sage green
 };
 
 // Spread seeds: deterministic "random" positions so the layout is always the same

@@ -16,7 +16,7 @@ import './style.css';
 // ─── Scene setup ─────────────────────────────────────────────────────────────
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0d0a0a); // near-black with a warm tint
+scene.background = new THREE.Color(0xffffff); // white
 
 // PerspectiveCamera(fov, aspect, near, far)
 // fov=60 is a natural field of view (Rhino default is 50)
@@ -31,7 +31,6 @@ document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 // ─── Lighting ─────────────────────────────────────────────────────────────────
 
-// Ambient light: fills the whole scene evenly (like a skylight in Rhino)
 scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
 // ─── OrbitControls ────────────────────────────────────────────────────────────
@@ -41,9 +40,38 @@ scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;    // smooth deceleration (like inertia in Rhino)
 controls.dampingFactor = 0.06;
-controls.minDistance = 50;        // how close you can zoom in
-controls.maxDistance = 800;       // how far you can zoom out
+controls.enableRotate = false;    // no rotation — only zoom and pan
+controls.panSpeed = 1.8;          // faster panning
+controls.minDistance = 150;       // how close you can zoom in
+controls.maxDistance = 450;       // how far you can zoom out
 controls.zoomSpeed = 1.2;
+
+// Remap left-click to pan (since rotation is off, left-click would do nothing by default)
+controls.mouseButtons = {
+  LEFT: THREE.MOUSE.PAN,
+  MIDDLE: THREE.MOUSE.DOLLY,
+  RIGHT: THREE.MOUSE.PAN,
+};
+
+// Touch: one finger pans, two fingers zoom+pan
+controls.touches = {
+  ONE: THREE.TOUCH.PAN,
+  TWO: THREE.TOUCH.DOLLY_PAN,
+};
+
+// ─── Grid sphere ──────────────────────────────────────────────────────────────
+// A large wireframe sphere that surrounds the whole scene.
+// EdgesGeometry extracts only the shared edges of the sphere faces,
+// giving clean latitude/longitude grid lines instead of triangle diagonals.
+// Think of it like a Rhino sphere with a surface grid display, rendered as lines.
+
+const sphereGeo = new THREE.SphereGeometry(700, 36, 24);
+const sphereEdges = new THREE.EdgesGeometry(sphereGeo);
+const sphereLines = new THREE.LineSegments(
+  sphereEdges,
+  new THREE.LineBasicMaterial({ color: 0xcccccc }) // light gray on white
+);
+scene.add(sphereLines);
 
 // ─── Project cards ────────────────────────────────────────────────────────────
 
@@ -71,9 +99,21 @@ window.addEventListener('mousemove', (e) => {
   checkHover();
 });
 
-// Click → open project page (only on canvas, not on UI buttons)
-window.addEventListener('click', (e) => {
-  if (e.target !== renderer.domElement) return;
+// Click vs drag detection — only navigate if the pointer barely moved
+// (prevents drag-panning from accidentally opening a project page)
+let pointerDownPos = { x: 0, y: 0 };
+const CLICK_THRESHOLD = 6; // pixels — movement within this = treated as a click
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  pointerDownPos = { x: e.clientX, y: e.clientY };
+});
+
+renderer.domElement.addEventListener('pointerup', (e) => {
+  const dx = e.clientX - pointerDownPos.x;
+  const dy = e.clientY - pointerDownPos.y;
+  const moved = Math.sqrt(dx * dx + dy * dy);
+  if (moved > CLICK_THRESHOLD) return; // it was a drag, not a click
+
   updatePointer(e.clientX, e.clientY);
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(cards);
@@ -83,18 +123,7 @@ window.addEventListener('click', (e) => {
   }
 });
 
-// Touch tap → open project page
-renderer.domElement.addEventListener('touchend', (e) => {
-  if (e.changedTouches.length !== 1) return;
-  const touch = e.changedTouches[0];
-  updatePointer(touch.clientX, touch.clientY);
-  raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(cards);
-  if (hits.length > 0) {
-    const { project } = hits[0].object.userData;
-    window.location.href = `/project.html?id=${project.slug}`;
-  }
-});
+// Touch tap — same threshold logic via pointerdown/pointerup (works for touch too)
 
 function checkHover() {
   raycaster.setFromCamera(pointer, camera);
@@ -126,7 +155,8 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     const category = btn.dataset.category;
     document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
+    // 'all' clears all active states — no button highlighted, all cards visible
+    if (category !== 'all') btn.classList.add('active');
     applyFilter(cards, category);
   });
 });
