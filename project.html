@@ -8,7 +8,7 @@
   </head>
   <body style="overflow-y: auto; background: #fff;">
 
-    <nav class="page-nav" style="background: linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, transparent 100%);">
+    <nav class="page-nav" id="project-nav" style="background: linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, transparent 100%);">
       <a href="/" style="color: rgba(0,0,0,0.5);">index</a>
       <a href="/info.html" style="color: rgba(0,0,0,0.5);">info</a>
     </nav>
@@ -42,12 +42,17 @@
              </div>`
           : '';
 
-        // ── Image gallery ────────────────────────────────────────────────────
+        // ── Image gallery (supports plain strings or { src, caption } objects) ──
         const imagesHTML = project.images.length
           ? `<div class="project-gallery">
-              ${project.images.map(src =>
-                `<img src="${src}" alt="" loading="lazy" onerror="this.style.display='none'" />`
-              ).join('')}
+              ${project.images.map(item => {
+                const src     = typeof item === 'string' ? item : item.src;
+                const caption = typeof item === 'string' ? '' : (item.caption || '');
+                return `<figure class="project-figure">
+                  <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+                  ${caption ? `<figcaption>${caption}</figcaption>` : ''}
+                </figure>`;
+              }).join('')}
              </div>`
           : '';
 
@@ -64,18 +69,63 @@
              </div>`
           : '';
 
-        container.innerHTML = `
-          <a class="back-link" href="/">← index</a>
+        // ── Video background hero ─────────────────────────────────────────────
+        if (project.videoBg) {
+          const hero = document.createElement('div');
+          hero.className = 'video-hero';
+          hero.innerHTML = `<iframe src="${project.videoBg}" frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+          document.body.insertBefore(hero, container);
+          document.body.classList.add('has-video-bg');
+          const nav = document.getElementById('project-nav');
+          nav.style.background = 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%)';
+          nav.querySelectorAll('a').forEach(a => a.style.color = 'rgba(255,255,255,0.8)');
+        }
 
-          <h1>${project.title}</h1>
-          <span class="tag">${project.category}</span>
+        // ── Helper: render one image figure ──────────────────────────────────
+        function figureHTML(item) {
+          const src     = typeof item === 'string' ? item : item.src;
+          const caption = typeof item === 'string' ? '' : (item.caption || '');
+          return `<figure class="project-figure">
+            <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+            ${caption ? `<figcaption>${caption}</figcaption>` : ''}
+          </figure>`;
+        }
 
-          <div class="project-text">${project.text}</div>
+        // ── Layout: featured (image left + text right, then image pair) ───────
+        if (project.layout === 'featured' && project.images.length) {
+          const [first, ...rest] = project.images;
+          container.innerHTML = `
+            <a class="back-link" href="/">← index</a>
+            <h1>${project.title}</h1>
+            <span class="tag">${project.category}</span>
 
-          ${linksHTML}
-          ${imagesHTML}
-          ${videosHTML}
-        `;
+            <div class="layout-featured">
+              <div class="featured-left">${figureHTML(first)}</div>
+              <div class="featured-right">
+                <div class="project-text">${project.text}</div>
+                ${linksHTML}
+              </div>
+              ${rest.map(figureHTML).join('')}
+            </div>
+
+            ${videosHTML}
+          `;
+
+        // ── Layout: default ───────────────────────────────────────────────────
+        } else {
+          container.innerHTML = `
+            <a class="back-link" href="/">← index</a>
+            <h1>${project.title}</h1>
+            <span class="tag">${project.category}</span>
+            <div class="project-text">${project.text}</div>
+            ${linksHTML}
+            ${project.images.length ? `<div class="project-gallery">
+              ${project.images.map(figureHTML).join('')}
+            </div>` : ''}
+            ${videosHTML}
+          `;
+        }
       }
     </script>
 

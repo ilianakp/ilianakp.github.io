@@ -7,8 +7,9 @@
 //   thumbnail   — path to the card image shown in the 3D scene (/public/images/...)
 //   text        — HTML string shown at the top of the project page (can include <a> tags)
 //   links       — array of { label, url } shown as pill buttons (use for external links)
-//   images      — array of image paths shown in the gallery (/public/images/[slug]/...)
-//   videos      — array of YouTube/Vimeo embed URLs (shown as iframes)
+//   videoBg     — optional Vimeo/YouTube embed URL: plays as full-width hero at top of page
+//   images      — array of image paths OR { src, caption } objects for the gallery
+//   videos      — array of YouTube/Vimeo embed URLs (shown as iframes below images)
 //
 // To add content: fill in text, links, images, videos for each project.
 // Images go in /public/images/[slug]/ — name them anything you like.
@@ -153,10 +154,35 @@ export const projects = [
     slug: 'trans-intelligence',
     title: 'Trans-intelligence',
     category: 'research',
+    layout: 'featured',
     thumbnail: '/images/trans-intelligence/thumb.jpg',
-    text: `<p>Text &amp; images.</p>`,
+    text: `
+      <p><em>Contextual Mumbling</em><br>Copenhagen/Berlin 2022</p>
+      <p>Prompt engineering, images, text<br>
+      Published in <em>If Not Now Magazine, The Surface Issue</em></p>
+
+      <p>Nature's state, by fact, has been predetermined as undesigned, since the development of the living world has been constructed driven by the natural prevailing forces. The existence of the human species has redirected the earth's development under its selfish dominion. Surfaces, once naturally formed, follow rules and patterns only to serve the preferences of humanity. Design has been a force to apply human thought into realities. Through the layers of intervention to the natural environment, we redefine its initial meaning. Mankind, the primary surface designer, has transformed earth into a collage of endless designed landscapes. Infrastructures have conquered the vast surface of the planet, from the scale of micro –microchips, artificial seeds etc.– to the scale of macro –planetary networks, the internet etc. But humans, not merely design. They have created machines with design means – artificial intelligence (AI) that can now take the role of the designer. We gradually passed from producing culture to producing entities that produce culture for us. Even though we are part of an ecosystem, we have come to pseudo-individualise our notions. We have created artificial egos that augment with material consumption and complete detachment from the origin. Could AI guide us back to the start and articulate the concept of things?</p>
+
+      <p>In this context, we, at Contextual Mumbling, aim to explore the notion of the natural as undesigned through artificial design intelligence that could potentially close this production loop. Responding to the current issue, we used keywords extracted from the open-call's text, to produce images with a GAN (Generative Adversarial Network) that correspond to our individual meanings of the undesigned — made from AI itself.</p>
+
+      <p><em>From text, to image, to culture.</em></p>
+    `,
     links: [],
-    images: [],
+    videoBg: 'https://player.vimeo.com/video/905113118?background=1&autoplay=1&loop=1&muted=1',
+    images: [
+      {
+        src: '/images/trans-intelligence/gan-01.png',
+        caption: `text_prompts = {0: ["ecosystems, oceans, pollution, minerals, impacts, bacteria, recycling, oyster, climate"]}`,
+      },
+      {
+        src: '/images/trans-intelligence/gan-02.png',
+        caption: `text_prompts = {0: ["mines, surface, pollution, soil, landscape, terrain, climate, volcanic, manufactured"]}`,
+      },
+      {
+        src: '/images/trans-intelligence/gan-03.png',
+        caption: `text_prompts = {0: ["manufactured world, climate change, green energy, diverse notions, plastic-free oceans, slow consumption, volcanic minerals, forest preservation, creative medium"]}`,
+      },
+    ],
     videos: [],
   },
   {

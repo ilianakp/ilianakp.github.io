@@ -290,7 +290,7 @@ p {
 .page-body.project {
   background: #fff;
   color: #111;
-  max-width: 860px;
+  max-width: 1600px;
   margin: 0 auto;
   text-align: left;
 }
@@ -355,18 +355,123 @@ p {
   border-color: rgba(0, 0, 0, 0.6);
 }
 
-.project-gallery {
+/* ── Video hero (fixed, framed by black, content scrolls over it) ─────────── */
+
+.video-hero {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 80px;
+}
+
+.video-hero iframe {
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  opacity: 0.7;
+}
+
+/* Content floats transparently over the fixed video */
+body.has-video-bg {
+  background: transparent;
+}
+
+body.has-video-bg .page-body.project {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  padding-top: 60vh; /* initial space so video is visible on load */
+  min-height: 100vh;
+}
+
+body.has-video-bg .page-body.project h1,
+body.has-video-bg .page-body.project p,
+body.has-video-bg .page-body.project .tag {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body.has-video-bg .back-link {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+body.has-video-bg .back-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body.has-video-bg .project-text a {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body.has-video-bg .project-figure figcaption {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Featured layout (image left + text right, then image row) ─────────────── */
+
+.layout-featured {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin: 32px 0 40px;
+}
+
+.featured-left,
+.featured-right {
+  min-width: 0;
+}
+
+.project-gallery--row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
   margin-bottom: 40px;
 }
 
-.project-gallery img {
+@media (max-width: 640px) {
+  .layout-featured {
+    grid-template-columns: 1fr;
+  }
+  .project-gallery--row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Image gallery ─────────────────────────────────────────────────────────── */
+
+.project-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.project-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-figure img {
   width: 100%;
   display: block;
   border-radius: 2px;
   object-fit: cover;
+}
+
+.project-figure figcaption {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+  letter-spacing: 0.02em;
 }
 
 .project-videos {
