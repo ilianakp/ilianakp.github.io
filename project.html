@@ -3,60 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project — Iliana Papanikolaou</title>
+    <title>Project — Iliana Papadopoulou</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body style="overflow-y: auto; background: linear-gradient(160deg, #1a0e0e 0%, #0d0a0a 100%);">
+  <body style="overflow-y: auto; background: #fff;">
 
-    <nav class="page-nav">
-      <a href="/">index</a>
-      <a href="/info.html">info</a>
+    <nav class="page-nav" style="background: linear-gradient(to bottom, rgba(255,255,255,0.85) 0%, transparent 100%);">
+      <a href="/" style="color: rgba(0,0,0,0.5);">index</a>
+      <a href="/info.html" style="color: rgba(0,0,0,0.5);">info</a>
     </nav>
 
-    <!-- This div is filled by the script below -->
-    <div class="page-body" id="project-content">
+    <div class="page-body project" id="project-content">
       <p>Loading…</p>
     </div>
 
     <script type="module">
-      // Read the project slug from the URL: /project.html?id=slug
-      // This is like reading a URL parameter in C# with HttpContext.Request.Query["id"]
       import { projects } from '/src/projects.js';
 
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-
+      const params  = new URLSearchParams(window.location.search);
+      const id      = params.get('id');
       const project = projects.find((p) => p.slug === id);
       const container = document.getElementById('project-content');
 
       if (!project) {
         container.innerHTML = `
           <h1>Project not found</h1>
-          <p><a href="/" style="color:inherit">← back to index</a></p>
+          <a class="back-link" href="/">← index</a>
         `;
       } else {
-        // Update page title
-        document.title = `${project.title} — Iliana Papanikolaou`;
+        document.title = `${project.title} — Iliana Papadopoulou`;
 
-        // Render project content
+        // ── External link buttons ────────────────────────────────────────────
+        const linksHTML = project.links.length
+          ? `<div class="project-links">
+              ${project.links.map(l =>
+                `<a class="project-link-btn" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
+              ).join('')}
+             </div>`
+          : '';
+
+        // ── Image gallery ────────────────────────────────────────────────────
+        const imagesHTML = project.images.length
+          ? `<div class="project-gallery">
+              ${project.images.map(src =>
+                `<img src="${src}" alt="" loading="lazy" onerror="this.style.display='none'" />`
+              ).join('')}
+             </div>`
+          : '';
+
+        // ── Video embeds ─────────────────────────────────────────────────────
+        const videosHTML = project.videos.length
+          ? `<div class="project-videos">
+              ${project.videos.map(src =>
+                `<div class="video-wrap">
+                   <iframe src="${src}" frameborder="0" allowfullscreen
+                     allow="autoplay; encrypted-media; picture-in-picture">
+                   </iframe>
+                 </div>`
+              ).join('')}
+             </div>`
+          : '';
+
         container.innerHTML = `
+          <a class="back-link" href="/">← index</a>
+
           <h1>${project.title}</h1>
           <span class="tag">${project.category}</span>
 
-          <img
-            class="project-image"
-            src="${project.thumbnail}"
-            alt="${project.title}"
-            onerror="this.style.display='none'"
-          />
+          <div class="project-text">${project.text}</div>
 
-          <p>${project.description}</p>
-
-          <p style="margin-top: 48px;">
-            <a href="/" style="color: var(--color-accent); font-size: 13px; letter-spacing: 0.04em;">
-              ← back to index
-            </a>
-          </p>
+          ${linksHTML}
+          ${imagesHTML}
+          ${videosHTML}
         `;
       }
     </script>
