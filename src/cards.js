@@ -20,21 +20,25 @@ const PLACEHOLDER_COLORS = {
 // Deterministic per-card jitter as a fraction of cell size (so it scales with screen)
 const JITTER = [
   [ 0.15, -0.20], [-0.20,  0.20], [ 0.20,  0.15], [-0.15, -0.20],
-  [ 0.25,  0.15], [-0.20,  0.15], [ 0.10, -0.25], [-0.10,  0.20],
-  [ 0.20, -0.10], [-0.25, -0.15], [ 0.15,  0.25], [-0.10, -0.20],
+  [ 0.25,  0.15], [-3,  0.15], [ 0.10, -0.25], [-0.10,  0.20],
+  [ 0.20, -0.10], [-0.25, -0.15], [-5, -0.8], [-0.10, -0.20],
   [ 0.25,  0.10], [-0.20,  0.20],
 ];
 
-// Small z offsets for depth — same for every screen size
-const DEPTHS = [-10, -40, -20, -60, -30, -50, -20, -55, -35, -50, -70, -15, -45, -65];
+// Small per-card z variation layered on top of the spherical base depth
+const DEPTHS = [-2, -45, -20, -60, -25, -55, -20, -55, -200, -55, -160, -15, -45, -70];
+
 
 // createCards now takes the camera so it can read the real frustum size at load time.
 // Returns { cards, spreadX, spreadY } — main.js uses the spread for pan clamping.
 export function createCards(scene, camera) {
-  // How much of the frustum (at z=0) to fill with cards
-  const FILL = 0.82;
-
   const aspect = window.innerWidth / window.innerHeight;
+  const isMobile = aspect < 1;
+
+  // On mobile: fill the full viewport and allow heavy overlap
+  const FILL     = isMobile ? 1.4 : 1.5;
+  const cardFill = isMobile ? 1.3 : 1.2;
+
   const tanHalfFov = Math.tan((camera.fov * Math.PI) / 360);
   const visibleHalfH = camera.position.z * tanHalfFov;
   const visibleHalfW = visibleHalfH * aspect;
@@ -49,8 +53,6 @@ export function createCards(scene, camera) {
 
   const cellW = (spreadX * 2) / cols;
   const cellH = (spreadY * 2) / rows;
-  // On mobile (portrait) cards are larger and can overlap a bit
-  const cardFill = aspect < 1 ? 1.15 : 1.0;
   const cardMax = Math.min(cellW, cellH) * cardFill;
 
   const loader = new THREE.TextureLoader();
@@ -60,15 +62,22 @@ export function createCards(scene, camera) {
     const col = i % cols;
     const row = Math.floor(i / cols);
 
-    // Cell center (top-left origin → convert to Three.js coords)
+    // Cell center — shift the whole grid down to clear the nav bar
+    const navOffset = visibleHalfH * 0.10;
     const cx = -spreadX + cellW * (col + 0.5);
-    const cy =  spreadY - cellH * (row + 0.5);
+    const cy =  spreadY - cellH * (row + 0.5) - navOffset;
 
     // Add jitter so it looks scattered, not like a rigid grid
     const [jx, jy] = JITTER[i] ?? [0, 0];
     const x = cx + jx * cellW * 0.4;
     const y = cy + jy * cellH * 0.4;
-    const z = DEPTHS[i] ?? -30;
+
+    // Spherical layout: cards curve back from centre (paraboloid).
+    // Cards near the edge of the screen are further from the camera,
+    const edgeDepth = isMobile ? 150 : 260;
+    const denom = spreadX * spreadX + spreadY * spreadY;
+    const sphereZ = -edgeDepth * (cx * cx + cy * cy) / denom;
+    const z = sphereZ + (DEPTHS[i] ?? 0);
 
     const color = PLACEHOLDER_COLORS[project.category] ?? 0x444444;
     const material = new THREE.MeshBasicMaterial({
@@ -83,8 +92,9 @@ export function createCards(scene, camera) {
       project.thumbnail,
       (texture) => {
         const imgAspect = texture.image.width / texture.image.height;
-        const w = imgAspect >= 1 ? cardMax : cardMax * imgAspect;
-        const h = imgAspect >= 1 ? cardMax / imgAspect : cardMax;
+        const scale = project.thumbScale ?? 1;
+        const w = (imgAspect >= 1 ? cardMax : cardMax * imgAspect) * scale;
+        const h = (imgAspect >= 1 ? cardMax / imgAspect : cardMax) * scale;
         mesh.geometry.dispose();
         mesh.geometry = new THREE.PlaneGeometry(w, h);
         material.map = texture;
@@ -107,11 +117,3 @@ export function createCards(scene, camera) {
   return { cards, spreadX, spreadY };
 }
 
-// Billboard: make all cards always face the camera.
-// Call this every frame inside the animation loop.
-// In Unity this would be a LookAt billboard script on each object.
-export function billboardCards(cards, camera) {
-  cards.forEach((card) => {
-    card.quaternion.copy(camera.quaternion);
-  });
-}

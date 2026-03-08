@@ -82,26 +82,41 @@
           nav.querySelectorAll('a').forEach(a => a.style.color = 'rgba(255,255,255,0.8)');
         }
 
+        // ── Image background hero ─────────────────────────────────────────────
+        if (project.imageBg) {
+          const hero = document.createElement('div');
+          hero.className = 'video-hero';
+          hero.style.cssText = `background: url('${project.imageBg}') center/cover no-repeat; padding: 0;`;
+          document.body.insertBefore(hero, container);
+          document.body.classList.add('has-video-bg');
+          const nav = document.getElementById('project-nav');
+          nav.style.background = 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%)';
+          nav.querySelectorAll('a').forEach(a => a.style.color = 'rgba(255,255,255,0.8)');
+        }
+
         // ── Helper: render one image figure ──────────────────────────────────
         function figureHTML(item) {
           const src     = typeof item === 'string' ? item : item.src;
           const caption = typeof item === 'string' ? '' : (item.caption || '');
-          return `<figure class="project-figure">
+          const half    = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
+          return `<figure class="project-figure${half}">
             <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
             ${caption ? `<figcaption>${caption}</figcaption>` : ''}
           </figure>`;
         }
 
-        // ── Layout: featured (image left + text right, then image pair) ───────
-        if (project.layout === 'featured' && project.images.length) {
-          const [first, ...rest] = project.images;
+        // ── Layout: featured (images left + text right, then image row) ───────
+        if (project.layout === 'featured') {
+          const leftCount = project.featuredLeftCount ?? 1;
+          const leftImages = project.images.slice(0, leftCount);
+          const rest = project.images.slice(leftCount);
           container.innerHTML = `
             <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
             <span class="tag">${project.category}</span>
 
             <div class="layout-featured">
-              <div class="featured-left">${figureHTML(first)}</div>
+              <div class="featured-left">${leftImages.map(figureHTML).join('')}</div>
               <div class="featured-right">
                 <div class="project-text">${project.text}</div>
                 ${linksHTML}
@@ -111,6 +126,98 @@
 
             ${videosHTML}
           `;
+
+        // ── Layout: two-column (left images + right text/images interleaved) ──
+        } else if (project.layout === 'two-column') {
+          const leftImgs = (project.leftImages || []).map(figureHTML).join('');
+          const rightImgs = (project.rightImages || []).map(figureHTML).join('');
+          container.innerHTML = `
+            <a class="back-link" href="/">← index</a>
+            <h1>${project.title}</h1>
+            <span class="tag">${project.category}</span>
+
+            <div class="layout-two-column">
+              <div class="two-col-left">${leftImgs}</div>
+              <div class="two-col-right">
+                <div class="project-text">${project.text}</div>
+                ${linksHTML}
+                ${rightImgs}
+              </div>
+            </div>
+
+            ${project.model3d ? `<div class="model-viewer-row" id="model-viewer"></div>` : ''}
+
+            ${project.images.length ? `<div class="project-gallery two-col-gallery">
+              ${project.images.map(figureHTML).join('')}
+            </div>` : ''}
+            ${videosHTML}
+          `;
+
+          // ── Init 3D model viewer ──────────────────────────────────────────
+          if (project.model3d) {
+            import('three').then(async (THREE) => {
+              const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+              const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
+
+              const viewerEl = document.getElementById('model-viewer');
+              const width = viewerEl.clientWidth;
+              const height = width * 0.5;
+              viewerEl.style.height = height + 'px';
+
+              const scene = new THREE.Scene();
+              const cam = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
+              cam.position.set(0, 0, 3);
+
+              const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+              renderer.setSize(width, height);
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              viewerEl.appendChild(renderer.domElement);
+
+              // Lighting
+              scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+              const dir = new THREE.DirectionalLight(0xffffff, 1);
+              dir.position.set(5, 5, 5);
+              scene.add(dir);
+
+              // Load model
+              const dracoLoader = new DRACOLoader();
+              dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+              const loader = new GLTFLoader();
+              loader.setDRACOLoader(dracoLoader);
+
+              loader.load(project.model3d, (gltf) => {
+                const model = gltf.scene;
+                // Center and scale to fit
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 2 / maxDim;
+                model.scale.setScalar(scale);
+                model.position.sub(center.multiplyScalar(scale));
+                scene.add(model);
+
+                cam.position.z = 3;
+
+                function animate() {
+                  requestAnimationFrame(animate);
+                  model.rotation.y += 0.005;
+                  renderer.render(scene, cam);
+                }
+                animate();
+              });
+
+              // Resize
+              window.addEventListener('resize', () => {
+                const w = viewerEl.clientWidth;
+                const h = w * 0.5;
+                viewerEl.style.height = h + 'px';
+                cam.aspect = w / h;
+                cam.updateProjectionMatrix();
+                renderer.setSize(w, h);
+              });
+            });
+          }
 
         // ── Layout: default ───────────────────────────────────────────────────
         } else {

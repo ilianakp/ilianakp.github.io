@@ -9,19 +9,21 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { createCards, billboardCards } from './cards.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { createCards } from './cards.js';
 import { initTargets, applyFilter, animateFilters } from './filters.js';
 import './style.css';
 
 // ─── Scene setup ─────────────────────────────────────────────────────────────
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff); // white
+scene.background = new THREE.Color(0xfaf6f1); // near-white warm beige fallback
 
 // PerspectiveCamera(fov, aspect, near, far)
 // fov=60 is a natural field of view (Rhino default is 50)
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
-const startZ = navigator.maxTouchPoints > 0 ? 190 : 300;
+const startZ = navigator.maxTouchPoints > 0 ? 65 : 130;
 camera.position.set(0, 0, startZ);
 
 // WebGL renderer — attaches a <canvas> to the page
@@ -43,8 +45,8 @@ controls.enableDamping = true;    // smooth deceleration (like inertia in Rhino)
 controls.dampingFactor = 0.06;
 controls.enableRotate = false;    // no rotation — only zoom and pan
 controls.panSpeed = 1.8;          // faster panning
-controls.minDistance = 150;       // how close you can zoom in
-controls.maxDistance = 450;       // how far you can zoom out
+controls.minDistance = navigator.maxTouchPoints > 0 ? 40 : 80;
+controls.maxDistance = navigator.maxTouchPoints > 0 ? 300 : 450;
 controls.zoomSpeed = 1.2;
 
 // Remap left-click to pan (since rotation is off, left-click would do nothing by default)
@@ -60,17 +62,31 @@ controls.touches = {
   TWO: THREE.TOUCH.DOLLY_PAN,
 };
 
-// ─── Grid sphere ──────────────────────────────────────────────────────────────
-// A large wireframe sphere that surrounds the whole scene.
-// EdgesGeometry extracts only the shared edges of the sphere faces,
-// giving clean latitude/longitude grid lines instead of triangle diagonals.
-// Think of it like a Rhino sphere with a surface grid display, rendered as lines.
+// ─── Background sphere ────────────────────────────────────────────────────────
+// Solid sphere rendered from the inside (BackSide) with vertex colors:
+// beige at the equator, fading to pale pink at the poles.
 
-const sphereGeo = new THREE.SphereGeometry(700, 36, 24);
-const sphereEdges = new THREE.EdgesGeometry(sphereGeo);
+const bgGeo = new THREE.SphereGeometry(690, 36, 24);
+const bgPos = bgGeo.attributes.position;
+const bgColors = new Float32Array(bgPos.count * 3);
+const beige    = new THREE.Color(0xfaf6f1); // near-white warm beige — horizon
+const palePink = new THREE.Color(0x000000); // black — poles
+for (let i = 0; i < bgPos.count; i++) {
+  const t = Math.abs(bgPos.getY(i)) / 690; // 0 at equator → 1 at poles
+  const c = beige.clone().lerp(palePink, t);
+  bgColors[i * 3] = c.r; bgColors[i * 3 + 1] = c.g; bgColors[i * 3 + 2] = c.b;
+}
+bgGeo.setAttribute('color', new THREE.BufferAttribute(bgColors, 3));
+scene.add(new THREE.Mesh(bgGeo, new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  side: THREE.BackSide,
+})));
+
+// Wireframe grid lines on top — warm gray to sit softly against the gradient
+const sphereEdges = new THREE.EdgesGeometry(new THREE.SphereGeometry(700, 36, 24));
 const sphereLines = new THREE.LineSegments(
   sphereEdges,
-  new THREE.LineBasicMaterial({ color: 0xcccccc }) // light gray on white
+  new THREE.LineBasicMaterial({ color: 0xddd5c8 }) // warm light gray
 );
 scene.add(sphereLines);
 
@@ -78,6 +94,53 @@ scene.add(sphereLines);
 
 const { cards, spreadX, spreadY } = createCards(scene, camera);
 initTargets(cards);
+
+// ─── 3D model thumbnails ───────────────────────────────────────────────────
+// Cards with a model3d field render a spinning 3D model as their texture.
+
+const modelThumbs = []; // { card, model, rtScene, rtCamera, renderTarget }
+
+cards.forEach((card) => {
+  const { project } = card.userData;
+  if (!project.model3d) return;
+
+  const rtSize = 512;
+  const renderTarget = new THREE.WebGLRenderTarget(rtSize, rtSize);
+
+  const rtScene = new THREE.Scene();
+  rtScene.background = new THREE.Color(0xfaf6f1);
+  rtScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const dLight = new THREE.DirectionalLight(0xffffff, 1);
+  dLight.position.set(5, 5, 5);
+  rtScene.add(dLight);
+
+  const rtCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  rtCamera.position.set(0, 0, 3);
+
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
+
+  gltfLoader.load(project.model3d, (gltf) => {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const s = 2 / maxDim;
+    model.scale.setScalar(s);
+    model.position.sub(center.multiplyScalar(s));
+    rtScene.add(model);
+
+    // Apply render target as the card texture
+    card.material.map = renderTarget.texture;
+    card.material.color.set(0xffffff);
+    card.material.needsUpdate = true;
+
+    modelThumbs.push({ card, model, rtScene, rtCamera, renderTarget });
+  });
+});
 
 // ─── Raycasting (click & hover detection) ────────────────────────────────────
 // A Raycaster shoots an invisible ray from the camera through the mouse cursor
@@ -195,6 +258,113 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
   });
 });
 
+// ─── View toggle (spatial / sequential) ──────────────────────────────────────
+
+import { projects } from './projects.js';
+
+const sequentialOrder = [
+  'archive', 'were-you-here', 'trans-intelligence', 'odyssey',
+  'machine-nostalgia', 'k41', 'id',
+];
+
+// Build the ordered list: specified order first, then the rest
+const orderedProjects = [
+  ...sequentialOrder.map((s) => projects.find((p) => p.slug === s)).filter(Boolean),
+  ...projects.filter((p) => !sequentialOrder.includes(p.slug)),
+];
+
+function figureHTML(item) {
+  const src = typeof item === 'string' ? item : item.src;
+  const caption = typeof item === 'string' ? '' : (item.caption || '');
+  const half = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
+  return `<figure class="project-figure${half}">
+    <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+    ${caption ? `<figcaption>${caption}</figcaption>` : ''}
+  </figure>`;
+}
+
+function renderSeqProject(p) {
+  const linksHTML = (p.links || [])
+    .map((l) => `<a class="project-link-btn" href="${l.url}" target="_blank">${l.label}</a>`)
+    .join('');
+  const videosHTML = (p.videos || [])
+    .map((v) => `<div class="video-wrap"><iframe src="${v}" allowfullscreen></iframe></div>`)
+    .join('');
+
+  let bodyHTML = '';
+
+  if (p.layout === 'featured') {
+    const leftCount = p.featuredLeftCount ?? 1;
+    const leftImages = (p.images || []).slice(0, leftCount);
+    const rest = (p.images || []).slice(leftCount);
+    bodyHTML = `
+      <div class="layout-featured">
+        <div class="featured-left">${leftImages.map(figureHTML).join('')}</div>
+        <div class="featured-right">
+          <div class="project-text">${p.text}</div>
+          ${linksHTML}
+        </div>
+        ${rest.map(figureHTML).join('')}
+      </div>
+      ${videosHTML}`;
+  } else if (p.layout === 'two-column') {
+    const leftImgs = (p.leftImages || []).map(figureHTML).join('');
+    const rightImgs = (p.rightImages || []).map(figureHTML).join('');
+    bodyHTML = `
+      <div class="layout-two-column">
+        <div class="two-col-left">${leftImgs}</div>
+        <div class="two-col-right">
+          <div class="project-text">${p.text}</div>
+          ${linksHTML}
+          ${rightImgs}
+        </div>
+      </div>
+      ${(p.images || []).length ? `<div class="project-gallery two-col-gallery">
+        ${p.images.map(figureHTML).join('')}
+      </div>` : ''}
+      ${videosHTML}`;
+  } else {
+    bodyHTML = `
+      <div class="project-text">${p.text}</div>
+      ${linksHTML}
+      ${(p.images || []).length ? `<div class="project-gallery">
+        ${p.images.map(figureHTML).join('')}
+      </div>` : ''}
+      ${videosHTML}`;
+  }
+
+  return `<section class="seq-project" id="seq-${p.slug}">
+    <a class="seq-title-link" href="/project.html?id=${p.slug}">
+      <h2 class="seq-title">${p.title}</h2>
+      <div class="seq-tagline">${p.tagline || p.category}</div>
+    </a>
+    <div class="seq-content">${bodyHTML}</div>
+  </section>`;
+}
+
+const seqView = document.getElementById('sequential-view');
+seqView.innerHTML = `<div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
+
+document.querySelectorAll('.view-toggle').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-toggle').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const view = btn.dataset.view;
+    if (view === 'sequential') {
+      document.getElementById('card-label').style.display = 'none';
+      cards.forEach((c) => { c.visible = false; });
+      persistentLabels.forEach(({ el }) => { el.style.display = 'none'; });
+      seqView.classList.add('active');
+    } else {
+      document.getElementById('card-label').style.display = '';
+      cards.forEach((c) => { c.visible = true; });
+      persistentLabels.forEach(({ el }) => { el.style.display = ''; });
+      seqView.classList.remove('active');
+    }
+  });
+});
+
 // ─── Resize handling ──────────────────────────────────────────────────────────
 
 window.addEventListener('resize', () => {
@@ -217,7 +387,6 @@ function animate() {
   else if (camera.position.x < -spreadX) { camera.position.x = -spreadX; controls.target.x = -spreadX; }
   if (camera.position.y >  spreadY) { camera.position.y =  spreadY; controls.target.y =  spreadY; }
   else if (camera.position.y < -spreadY) { camera.position.y = -spreadY; controls.target.y = -spreadY; }
-  billboardCards(cards, camera);  // make cards face the camera every frame
   animateFilters(cards);          // smoothly animate filter opacity/scale
 
   // Mobile: reproject each card's label to its current screen position
@@ -228,6 +397,14 @@ function animate() {
       el.style.top  = ((-pos.y * 0.5 + 0.5) * window.innerHeight) + 'px';
     });
   }
+
+  // Render 3D model thumbnails to their render targets
+  modelThumbs.forEach(({ model, rtScene, rtCamera, renderTarget }) => {
+    model.rotation.y += 0.005;
+    renderer.setRenderTarget(renderTarget);
+    renderer.render(rtScene, rtCamera);
+  });
+  renderer.setRenderTarget(null);
 
   renderer.render(scene, camera);
 }

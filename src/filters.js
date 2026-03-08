@@ -31,9 +31,11 @@ export function animateFilters(cards) {
     const t = targets.get(card);
     if (!t) return;
 
-    // Lerp opacity
+    // Lerp opacity — skip if hover is controlling it
     const mat = card.material;
-    mat.opacity += (t.opacity - mat.opacity) * speed;
+    if (!card.userData.hoverActive) {
+      mat.opacity += (t.opacity - mat.opacity) * speed;
+    }
 
     // Lerp scale (uniform)
     card.scale.x += (t.scale - card.scale.x) * speed;

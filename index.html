@@ -6,7 +6,7 @@
     <meta name="description" content="Iliana Papadopoulou — architect, artist, creative developer" />
     <title>Iliana Papadopoulou</title>
   </head>
-  <body class="light" style="background: #ffffff;">
+  <body class="light">
 
     <!-- The Three.js canvas will be appended here by main.js -->
     <div id="canvas-container"></div>
@@ -17,14 +17,22 @@
         <a href="/">index</a>
         <a href="/info.html">info</a>
       </div>
+      <div class="nav-center">
+        <span class="nav-label">view</span>
+        <button class="view-toggle active" data-view="spatial">spatial</button>
+        <button class="view-toggle" data-view="sequential">sequential</button>
+      </div>
       <div class="nav-right">
-        <!-- data-category must match the category strings in projects.js -->
+        <span class="nav-label">tags</span>
         <button class="filter-btn" data-category="all">all</button>
         <button class="filter-btn" data-category="interactive">interactive</button>
         <button class="filter-btn" data-category="data&visuals">data&amp;visuals</button>
         <button class="filter-btn" data-category="research">research</button>
       </div>
     </nav>
+
+    <!-- Sequential list view (hidden by default) -->
+    <div id="sequential-view"></div>
 
     <!-- Project title that appears when hovering a card -->
     <div id="card-label"></div>
