@@ -9,6 +9,7 @@
 //   links       — array of { label, url } shown as pill buttons (use for external links)
 //   videoBg     — optional Vimeo/YouTube embed URL: plays as full-width hero at top of page
 //   images      — array of image paths OR { src, caption } objects for the gallery
+//   tagline     — short plain-text description shown under title on hover in 3D scene
 //   videos      — array of YouTube/Vimeo embed URLs (shown as iframes below images)
 //
 // To add content: fill in text, links, images, videos for each project.
@@ -19,6 +20,7 @@ export const projects = [
     slug: 'odyssey',
     title: 'Odyssey',
     category: 'interactive',
+    tagline: 'Music album, visuals & technology',
     thumbnail: '/images/odyssey/thumb.jpg',
     text: `<p>Music album, visuals &amp; technology.</p>`,
     links: [],
@@ -29,7 +31,8 @@ export const projects = [
     slug: 'data-poetics',
     title: 'Data Poetics',
     category: 'data&visuals',
-    thumbnail: '/images/data-poetics/thumb.jpg',
+    tagline: 'MArch thesis',
+    thumbnail: '/images/data-poetics/thumb.png',
     text: `<p>MArch thesis exploring the poetics of data visualization.</p>`,
     links: [],
     images: [],
@@ -39,7 +42,8 @@ export const projects = [
     slug: 'k41',
     title: 'K41',
     category: 'interactive',
-    thumbnail: '/images/k41/thumb.jpg',
+    tagline: 'Events',
+    thumbnail: '/images/k41/thumb.png',
     text: `<p>Events.</p>`,
     links: [],
     images: [],
@@ -49,7 +53,8 @@ export const projects = [
     slug: 'dynitiko',
     title: 'Dynitikó',
     category: 'interactive',
-    thumbnail: '/images/dynitiko/thumb.jpg',
+    tagline: 'Interactive installation',
+    thumbnail: '/images/dynitiko/thumb.png',
     text: `<p>Interactive installation.</p>`,
     links: [],
     images: [],
@@ -59,7 +64,8 @@ export const projects = [
     slug: 'id',
     title: 'ID',
     category: 'data&visuals',
-    thumbnail: '/images/id/thumb.jpg',
+    tagline: 'Editorial design',
+    thumbnail: '/images/id/thumb.png',
     text: `<p>Editorial design.</p>`,
     links: [],
     images: [],
@@ -69,7 +75,8 @@ export const projects = [
     slug: '3d-scanning',
     title: 'An exploration of 3D scanning as spatial memory',
     category: 'research',
-    thumbnail: '/images/3d-scanning/thumb.jpg',
+    tagline: 'Research & publication',
+    thumbnail: '/images/3d-scanning/thumb.png',
     text: `<p>Text-based research exploring 3D scanning as a medium to record spatial memory.</p>`,
     links: [
       {
@@ -84,6 +91,7 @@ export const projects = [
     slug: 'machine-nostalgia',
     title: 'Machine nostalgia',
     category: 'interactive',
+    tagline: 'Interactive artwork',
     thumbnail: '/images/machine-nostalgia/thumb.jpg',
     text: `<p>Interactive artwork.</p>`,
     links: [
@@ -99,7 +107,8 @@ export const projects = [
     slug: 'shudder',
     title: 'shudder~shutter~shatter',
     category: 'data&visuals',
-    thumbnail: '/images/shudder/thumb.jpg',
+    tagline: 'Video art',
+    thumbnail: '/images/shudder/thumb.png',
     text: `<p>Video art.</p>`,
     links: [],
     images: [],
@@ -109,7 +118,8 @@ export const projects = [
     slug: 'geoplant',
     title: 'GeoPlant',
     category: 'research',
-    thumbnail: '/images/geoplant/thumb.jpg',
+    tagline: 'Research & web tool',
+    thumbnail: '/images/geoplant/thumb.png',
     text: `<p>Research &amp; web tool.</p>`,
     links: [],
     images: [],
@@ -119,7 +129,8 @@ export const projects = [
     slug: 'were-you-here',
     title: 'were you here',
     category: 'interactive',
-    thumbnail: '/images/were-you-here/thumb.jpg',
+    tagline: 'Interactive artwork',
+    thumbnail: '/images/were-you-here/thumb.png',
     text: `<p>Interactive artwork.</p>`,
     links: [],
     images: [],
@@ -129,7 +140,8 @@ export const projects = [
     slug: 'penumbra',
     title: 'Penumbra',
     category: 'data&visuals',
-    thumbnail: '/images/penumbra/thumb.jpg',
+    tagline: 'Visuals',
+    thumbnail: '/images/penumbra/thumb.png',
     text: `<p>Visuals.</p>`,
     links: [],
     images: [],
@@ -139,7 +151,8 @@ export const projects = [
     slug: 'archive',
     title: 'ARchive',
     category: 'research',
-    thumbnail: '/images/archive/thumb.jpg',
+    tagline: 'MSc thesis, The Bartlett UCL',
+    thumbnail: '/images/archive/thumb.png',
     text: `<p>MSc thesis — Architectural Computation, The Bartlett School of Architecture, UCL.</p>`,
     links: [
       {
@@ -154,8 +167,9 @@ export const projects = [
     slug: 'trans-intelligence',
     title: 'Trans-intelligence',
     category: 'research',
+    tagline: 'Prompt engineering, images, text',
     layout: 'featured',
-    thumbnail: '/images/trans-intelligence/thumb.jpg',
+    thumbnail: '/images/trans-intelligence/thumb.png',
     text: `
       <p><em>Contextual Mumbling</em><br>Copenhagen/Berlin 2022</p>
       <p>Prompt engineering, images, text<br>
@@ -189,7 +203,8 @@ export const projects = [
     slug: 'here-but-when',
     title: 'HERE BUT WHEN',
     category: 'research',
-    thumbnail: '/images/here-but-when/thumb.jpg',
+    tagline: 'Research',
+    thumbnail: '/images/here-but-when/thumb.gif',
     text: `<p>Research.</p>`,
     links: [
       {

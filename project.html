@@ -126,6 +126,19 @@
             ${videosHTML}
           `;
         }
+
+        // ── Next project footer ───────────────────────────────────────────────
+        const currentIndex = projects.findIndex((p) => p.slug === id);
+        const next = projects[(currentIndex + 1) % projects.length];
+        const footer = document.createElement('footer');
+        footer.className = 'project-footer';
+        footer.innerHTML = `
+          <a class="next-project-link" href="/project.html?id=${next.slug}">
+            <span class="next-label">next</span>
+            <span class="next-title">${next.title}</span>
+          </a>
+        `;
+        document.body.appendChild(footer);
       }
     </script>
 

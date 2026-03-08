@@ -21,7 +21,8 @@ scene.background = new THREE.Color(0xffffff); // white
 // PerspectiveCamera(fov, aspect, near, far)
 // fov=60 is a natural field of view (Rhino default is 50)
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
-camera.position.set(0, 0, 300); // start position: looking into the card cloud
+const startZ = navigator.maxTouchPoints > 0 ? 190 : 300;
+camera.position.set(0, 0, startZ);
 
 // WebGL renderer — attaches a <canvas> to the page
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,7 +76,7 @@ scene.add(sphereLines);
 
 // ─── Project cards ────────────────────────────────────────────────────────────
 
-const cards = createCards(scene);
+const { cards, spreadX, spreadY } = createCards(scene, camera);
 initTargets(cards);
 
 // ─── Raycasting (click & hover detection) ────────────────────────────────────
@@ -88,16 +89,39 @@ const pointer = new THREE.Vector2(); // mouse position in -1..1 normalized coord
 let hoveredCard = null;
 const labelEl = document.getElementById('card-label');
 
+// Detect touch device — on touch screens labels are always visible (no hover)
+const isTouch = navigator.maxTouchPoints > 0;
+
+// Mobile: one persistent label per card, updated every frame
+const persistentLabels = [];
+if (isTouch) {
+  labelEl.style.display = 'none'; // hide the single hover label
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:10;';
+  document.body.appendChild(container);
+
+  cards.forEach((card) => {
+    const el = document.createElement('div');
+    el.className = 'card-label-mobile';
+    const { title, tagline } = card.userData.project;
+    el.innerHTML = `<span class="label-title">${title}</span>${tagline ? `<span class="label-tagline">${tagline}</span>` : ''}`;
+    container.appendChild(el);
+    persistentLabels.push({ el, card });
+  });
+}
+
 function updatePointer(clientX, clientY) {
   pointer.x = (clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(clientY / window.innerHeight) * 2 + 1;
 }
 
-// Mouse move → show label on hover
-window.addEventListener('mousemove', (e) => {
-  updatePointer(e.clientX, e.clientY);
-  checkHover();
-});
+// Mouse move → show label on hover (desktop only)
+if (!isTouch) {
+  window.addEventListener('mousemove', (e) => {
+    updatePointer(e.clientX, e.clientY);
+    checkHover();
+  });
+}
 
 // Click vs drag detection — only navigate if the pointer barely moved
 // (prevents drag-panning from accidentally opening a project page)
@@ -132,16 +156,26 @@ function checkHover() {
   if (hits.length > 0) {
     const card = hits[0].object;
     if (card !== hoveredCard) {
-      if (hoveredCard) hoveredCard.userData.hoverActive = false;
+      if (hoveredCard) {
+        hoveredCard.userData.hoverActive = false;
+        hoveredCard.material.opacity = 1;
+      }
       hoveredCard = card;
       card.userData.hoverActive = true;
+      card.material.opacity = 0.5;
       renderer.domElement.style.cursor = 'pointer';
-      labelEl.textContent = card.userData.project.title;
-      labelEl.style.opacity = '1';
+      const { title, tagline } = card.userData.project;
+      labelEl.innerHTML = `<span class="label-title">${title}</span>${tagline ? `<span class="label-tagline">${tagline}</span>` : ''}`;
     }
+    // Project 3D card position to 2D screen coords
+    const pos = card.position.clone().project(camera);
+    labelEl.style.left = ((pos.x * 0.5 + 0.5) * window.innerWidth) + 'px';
+    labelEl.style.top  = ((-pos.y * 0.5 + 0.5) * window.innerHeight) + 'px';
+    labelEl.style.opacity = '1';
   } else {
     if (hoveredCard) {
       hoveredCard.userData.hoverActive = false;
+      hoveredCard.material.opacity = 1;
       hoveredCard = null;
     }
     renderer.domElement.style.cursor = 'default';
@@ -177,8 +211,23 @@ function animate() {
   requestAnimationFrame(animate);
 
   controls.update();              // apply damping to camera movement
+
+  // Clamp pan to the card spread bounds (computed at load time from actual screen size)
+  if (camera.position.x >  spreadX) { camera.position.x =  spreadX; controls.target.x =  spreadX; }
+  else if (camera.position.x < -spreadX) { camera.position.x = -spreadX; controls.target.x = -spreadX; }
+  if (camera.position.y >  spreadY) { camera.position.y =  spreadY; controls.target.y =  spreadY; }
+  else if (camera.position.y < -spreadY) { camera.position.y = -spreadY; controls.target.y = -spreadY; }
   billboardCards(cards, camera);  // make cards face the camera every frame
   animateFilters(cards);          // smoothly animate filter opacity/scale
+
+  // Mobile: reproject each card's label to its current screen position
+  if (isTouch) {
+    persistentLabels.forEach(({ el, card }) => {
+      const pos = card.position.clone().project(camera);
+      el.style.left = ((pos.x * 0.5 + 0.5) * window.innerWidth) + 'px';
+      el.style.top  = ((-pos.y * 0.5 + 0.5) * window.innerHeight) + 'px';
+    });
+  }
 
   renderer.render(scene, camera);
 }
