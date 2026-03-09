@@ -17,11 +17,59 @@
 
 export const projects = [
   {
+    slug: 'fire-of-transformation',
+    title: 'Fire of Transformation',
+    category: 'data&visuals',
+    tagline: 'Animation and art installation',
+    thumbnail: '/images/fire-of-transformation/thumbnail.png',
+    videoBg: 'https://www.youtube.com/embed/uVnM8dclihM?autoplay=1&loop=1&mute=1&playlist=uVnM8dclihM&controls=0&showinfo=0',
+    layout: 'featured',
+    featuredLeftCount: 1,
+    text: `
+      <p>Animation and art installation<br>
+      Exhibited at Artgate Project, Thessaloniki<br>
+      Screened at Immaterial Film Club, Latraac Athens 2025<br>
+      poem: Ornella Pacchioni<br>
+      sound design, edit: birgif<br>
+      cast: Marcus Kjellingbro<br>
+      narration: Theodora project<br>
+
+      Copenhagen, DK–Paris, FR, 2025</p>
+
+      <p>An animation based on a poem that weaves together
+      memories of people and places, fantastical objects, and the
+      imaginary world of flora. It explores the evolution of the self
+      through emotional connection and the discovery of sexuality.
+      As abstract forms gradually take shape into defined figures, the
+      animation reflects the passage from the ephemeral to the
+      tangible, capturing moments of intimacy, exploration, and
+      transformation while creating a dance within the text. The
+      movement is intended to feel introspective — like entering
+      one's own memory and navigating through it. Some images
+      emerge directly from the poem's symbols, serving as a guiding
+      thread, while others form more abstract associations. In this
+      way, the animation becomes an exploration of emotional
+      connectivity and self-evolution, embodying the poem's essence
+      through emerging technologies such as volumetric scanning
+      and digital sculpting.</p>
+    `,
+    links: [],
+    images: [
+      '/images/fire-of-transformation/IMG_7892.jpg',
+      '/images/fire-of-transformation/s1.jpg',
+      '/images/fire-of-transformation/s2.jpg',
+      '/images/fire-of-transformation/s3.jpg',
+      '/images/fire-of-transformation/s4.jpg',
+      '/images/fire-of-transformation/IMG_4074.JPEG',
+    ],
+    videos: [],
+  },
+  {
     slug: 'odyssey',
     title: 'Odyssey',
-    category: 'interactive',
+    category: 'data&visuals',
     tagline: 'Music album, visuals & technology',
-    thumbnail: '/images/odyssey/thumb.jpg',
+    thumbnail: '/images/odyssey/noise-pcl-02.png',
     layout: 'featured',
     featuredLeftCount: 2,
     text: `
@@ -100,8 +148,8 @@ export const projects = [
     title: 'K41 events',
     category: 'interactive',
     tagline: 'Events',
-    thumbnail: '/images/k41/thumb.png',
-    model3d: '/images/k41/wrapit.glb',
+    thumbnail: '/images/k41/k41-thumbnail.png',
+    thumbScale: 0.5,
     layout: 'two-column',
     videoBg: 'https://www.youtube.com/embed/9J5-bY3oFvw?autoplay=1&loop=1&mute=1&playlist=9J5-bY3oFvw&controls=0&showinfo=0',
     text: `
@@ -175,7 +223,7 @@ export const projects = [
   {
     slug: 'id',
     title: 'ID',
-    category: 'data&visuals',
+    category: 'interactive',
     tagline: 'Set design & technology',
     thumbnail: '/images/id/thumb.png',
     layout: 'featured',

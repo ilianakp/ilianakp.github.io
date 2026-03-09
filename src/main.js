@@ -45,7 +45,7 @@ controls.enableDamping = true;    // smooth deceleration (like inertia in Rhino)
 controls.dampingFactor = 0.06;
 controls.enableRotate = false;    // no rotation — only zoom and pan
 controls.panSpeed = 1.8;          // faster panning
-controls.minDistance = navigator.maxTouchPoints > 0 ? 40 : 80;
+controls.minDistance = navigator.maxTouchPoints > 0 ? 15 : 30;
 controls.maxDistance = navigator.maxTouchPoints > 0 ? 300 : 450;
 controls.zoomSpeed = 1.2;
 
@@ -248,6 +248,23 @@ function checkHover() {
 
 // ─── Filter buttons ───────────────────────────────────────────────────────────
 
+function applySeqFilter(category) {
+  // Sidebar nav items: dim non-matching
+  seqView.querySelectorAll('.seq-nav-item').forEach((item) => {
+    const slug = item.dataset.slug;
+    const p = projects.find((pr) => pr.slug === slug);
+    const match = category === 'all' || (p && p.category === category);
+    item.classList.toggle('seq-nav-item--dimmed', !match);
+  });
+  // Scroll sections: hide non-matching
+  seqView.querySelectorAll('.seq-project').forEach((section) => {
+    const slug = section.id.replace('seq-', '');
+    const p = projects.find((pr) => pr.slug === slug);
+    const match = category === 'all' || (p && p.category === category);
+    section.classList.toggle('seq-project--hidden', !match);
+  });
+}
+
 document.querySelectorAll('.filter-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     const category = btn.dataset.category;
@@ -255,6 +272,7 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
     // 'all' clears all active states — no button highlighted, all cards visible
     if (category !== 'all') btn.classList.add('active');
     applyFilter(cards, category);
+    applySeqFilter(category);
   });
 });
 
@@ -263,7 +281,7 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
 import { projects } from './projects.js';
 
 const sequentialOrder = [
-  'archive', 'were-you-here', 'trans-intelligence', 'odyssey',
+  'archive', 'were-you-here', 'fire-of-transformation', 'trans-intelligence', 'odyssey',
   'machine-nostalgia', 'k41', 'id',
 ];
 
@@ -333,17 +351,68 @@ function renderSeqProject(p) {
       ${videosHTML}`;
   }
 
-  return `<section class="seq-project" id="seq-${p.slug}">
-    <a class="seq-title-link" href="/project.html?id=${p.slug}">
-      <h2 class="seq-title">${p.title}</h2>
-      <div class="seq-tagline">${p.tagline || p.category}</div>
-    </a>
-    <div class="seq-content">${bodyHTML}</div>
+  // Determine background type and build corresponding markup
+  let bgClass = 'seq-project--light';
+  let bgMarkup = '';
+  let sectionStyle = '';
+
+  if (p.videoBg) {
+    bgClass = 'seq-project--video';
+    bgMarkup = `<div class="seq-bg-fixed"><iframe src="${p.videoBg}" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div><div class="seq-bg-scrim"></div>`;
+  } else if (p.imageBg) {
+    bgClass = 'seq-project--image';
+    bgMarkup = `<div class="seq-bg-fixed" style="background: url('${p.imageBg}') center/cover no-repeat"></div><div class="seq-bg-scrim"></div>`;
+  }
+
+  return `<section class="seq-project ${bgClass}" id="seq-${p.slug}"${sectionStyle}>
+    ${bgMarkup}
+    <div class="seq-project-content">
+      <div class="seq-title-block">
+        <h2 class="seq-title">${p.title}</h2>
+        <div class="seq-tagline">${p.tagline || p.category}</div>
+      </div>
+      <div class="seq-content">${bodyHTML}</div>
+    </div>
   </section>`;
 }
 
 const seqView = document.getElementById('sequential-view');
-seqView.innerHTML = `<div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
+const navItems = orderedProjects.map((p) =>
+  `<a class="seq-nav-item" href="#seq-${p.slug}" data-slug="${p.slug}">${p.title}</a>`
+).join('');
+seqView.innerHTML = `
+  <nav class="seq-sidebar">${navItems}</nav>
+  <div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
+
+// Sidebar click → smooth scroll to project section within the sequential container
+const seqSidebar = seqView.querySelector('.seq-sidebar');
+seqSidebar.addEventListener('click', (e) => {
+  const link = e.target.closest('.seq-nav-item');
+  if (!link) return;
+  e.preventDefault();
+  const target = seqView.querySelector(`#seq-${link.dataset.slug}`);
+  if (target) {
+    seqView.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+  }
+  // On mobile, close the sidebar after selecting a project
+  seqSidebar.classList.remove('open');
+});
+
+// Mobile: "index" link toggles sidebar in sequential view
+const indexLink = document.querySelector('.nav-left a[href="/"]');
+indexLink.addEventListener('click', (e) => {
+  if (window.innerWidth <= 600 && seqView.classList.contains('active')) {
+    e.preventDefault();
+    seqSidebar.classList.toggle('open');
+  }
+});
+
+// Dismiss sidebar when tapping outside it on mobile
+seqView.addEventListener('click', (e) => {
+  if (seqSidebar.classList.contains('open') && !seqSidebar.contains(e.target)) {
+    seqSidebar.classList.remove('open');
+  }
+});
 
 document.querySelectorAll('.view-toggle').forEach((btn) => {
   btn.addEventListener('click', () => {
