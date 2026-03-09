@@ -42,12 +42,12 @@ scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;    // smooth deceleration (like inertia in Rhino)
-controls.dampingFactor = 0.06;
+controls.dampingFactor = 0.08;
 controls.enableRotate = false;    // no rotation — only zoom and pan
-controls.panSpeed = 1.8;          // faster panning
+controls.panSpeed = 2.5;          // faster panning
 controls.minDistance = navigator.maxTouchPoints > 0 ? 15 : 30;
 controls.maxDistance = navigator.maxTouchPoints > 0 ? 300 : 450;
-controls.zoomSpeed = 1.2;
+controls.zoomSpeed = 1.8;
 
 // Remap left-click to pan (since rotation is off, left-click would do nothing by default)
 controls.mouseButtons = {
@@ -253,14 +253,16 @@ function applySeqFilter(category) {
   seqView.querySelectorAll('.seq-nav-item').forEach((item) => {
     const slug = item.dataset.slug;
     const p = projects.find((pr) => pr.slug === slug);
-    const match = category === 'all' || (p && p.category === category);
+    const cat = p && p.category;
+    const match = category === 'all' || (cat && (Array.isArray(cat) ? cat.includes(category) : cat === category));
     item.classList.toggle('seq-nav-item--dimmed', !match);
   });
   // Scroll sections: hide non-matching
   seqView.querySelectorAll('.seq-project').forEach((section) => {
     const slug = section.id.replace('seq-', '');
     const p = projects.find((pr) => pr.slug === slug);
-    const match = category === 'all' || (p && p.category === category);
+    const cat = p && p.category;
+    const match = category === 'all' || (cat && (Array.isArray(cat) ? cat.includes(category) : cat === category));
     section.classList.toggle('seq-project--hidden', !match);
   });
 }
@@ -459,11 +461,13 @@ function animate() {
   animateFilters(cards);          // smoothly animate filter opacity/scale
 
   // Mobile: reproject each card's label to its current screen position
+  // and sync label opacity with the card's filter opacity
   if (isTouch) {
     persistentLabels.forEach(({ el, card }) => {
       const pos = card.position.clone().project(camera);
       el.style.left = ((pos.x * 0.5 + 0.5) * window.innerWidth) + 'px';
       el.style.top  = ((-pos.y * 0.5 + 0.5) * window.innerHeight) + 'px';
+      el.style.opacity = card.material.opacity;
     });
   }
 

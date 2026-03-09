@@ -331,7 +331,7 @@ export const projects = [
   {
     slug: 'archive',
     title: 'ARchive',
-    category: 'research',
+    category: ['interactive', 'research'],
     tagline: 'MSc thesis, The Bartlett UCL',
     thumbnail: '/images/archive/thumb.png',
     videoBg: 'https://www.youtube.com/embed/YMwLQ9-NuIY?autoplay=1&loop=1&mute=1&playlist=YMwLQ9-NuIY&controls=0&showinfo=0',

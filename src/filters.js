@@ -17,7 +17,9 @@ export function initTargets(cards) {
 export function applyFilter(cards, activeCategory) {
   cards.forEach((card) => {
     const { project } = card.userData;
-    const visible = activeCategory === 'all' || project.category === activeCategory;
+    const cat = project.category;
+    const visible = activeCategory === 'all' ||
+      (Array.isArray(cat) ? cat.includes(activeCategory) : cat === activeCategory);
     const t = targets.get(card);
     t.opacity = visible ? 1 : 0.08;
     t.scale = visible ? 1 : 0.6;

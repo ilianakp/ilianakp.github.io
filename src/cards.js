@@ -80,6 +80,16 @@ export function createCards(scene, camera) {
     if (!isMobile && i === 11) y -= cellH * 1;   // Shudder: down
     if (!isMobile && i === 12) x -= cellW * 0.6;   // Were You Here: left
 
+    if (isMobile && i === 13) y += cellW * 3;  // trans-intelligence
+    if (isMobile && i === 4) y += cellW * 0.2;  // dynitiko
+    if (isMobile && i === 4) y += cellW * 0.5;  // dynitiko
+    if (isMobile && i === 14) y += cellW * -0.5;
+    if (isMobile && i === 5) x += cellW * -0.2;
+    if (isMobile && i === 0) x -= cellW * -0.1;    // FoT: left
+
+
+
+
     // Spherical layout: cards curve back from centre (paraboloid).
     // Cards near the edge of the screen are further from the camera,
     const edgeDepth = isMobile ? 60 : 260;
@@ -89,7 +99,8 @@ export function createCards(scene, camera) {
     const depthVal = DEPTHS[i] ?? 0;
     const z = sphereZ + (isMobile ? Math.max(depthVal, -30) : depthVal);
 
-    const color = PLACEHOLDER_COLORS[project.category] ?? 0x444444;
+    const cat = Array.isArray(project.category) ? project.category[0] : project.category;
+    const color = PLACEHOLDER_COLORS[cat] ?? 0x444444;
     const material = new THREE.MeshBasicMaterial({
       color,
       side: THREE.DoubleSide,

@@ -241,16 +241,20 @@ body.light .nav-label {
   align-items: center;
   gap: 3px;
   text-align: center;
+  transition: opacity 0.3s;
   pointer-events: none;
-  white-space: nowrap;
+  max-width: 120px;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .card-label-mobile .label-title {
-  font-size: clamp(11px, 2.5vw, 15px);
+  font-size: clamp(13px, 3vw, 17px);
 }
 
 .card-label-mobile .label-tagline {
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 /* ── Info & project pages (shared) ───────────────────────────────────────── */
