@@ -251,6 +251,34 @@ export const projects = [
     videos: [],
   },
   {
+    slug: 'archive-hbi',
+    title: 'ARchive: Human-Building Interaction Through Lived Archival Systems Across Space and Time',
+    category: 'research',
+    tagline: 'Book chapter, Springer 2026',
+    thumbnail: '/images/3d-scanning/thumb.png',
+    thumbScale: 0.6,
+    text: `
+      <p>Iliana Papadopoulou, Ava Fatah gen. Schieck, Sherif Tarabishy</p>
+
+      <p>Book chapter in <em>Human-Building Interaction</em><br>
+      Springer Series in Adaptive Environments<br>
+      Springer Nature Switzerland, Cham, 2026, pp. 301–325<br>
+      DOI: <a href="https://doi.org/10.1007/978-3-032-16863-4_12" target="_blank" rel="noopener">10.1007/978-3-032-16863-4_12</a></p>
+
+      <p>This chapter extends the ARchive research, exploring how lived archival systems can mediate human–building interaction across space and time. Building upon previous work on 3D scanning as a medium for spatial memory, it examines how emerging technologies — volumetric capture, deep learning–based 3D semantic segmentation, and extended reality — can be combined to construct dynamic, inhabitable archives of the built environment. The work positions the architectural archive not as a static record but as a living, navigable system in which past and present configurations of space coexist and become accessible through interactive interfaces.</p>
+
+      <p>The chapter contributes to the broader discourse on Human-Building Interaction by reframing the archive as a spatially situated, temporally layered medium of communication between people and buildings. It discusses methodological foundations, technical components, and the implications of using 3D scanning, machine learning, and XR as tools for memory, preservation, and reinterpretation in architectural and museum contexts.</p>
+    `,
+    links: [
+      {
+        label: 'Read on Springer',
+        url: 'https://link.springer.com/chapter/10.1007/978-3-032-16863-4_12',
+      },
+    ],
+    images: [],
+    videos: [],
+  },
+  {
     slug: '3d-scanning',
     title: 'An exploration of 3D scanning as spatial memory',
     category: 'research',
