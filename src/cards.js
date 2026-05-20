@@ -36,8 +36,8 @@ export function createCards(scene, camera) {
   const isMobile = aspect < 1;
 
   // On mobile: smaller cards, wider spread so they don't overlap
-  const FILL     = isMobile ? 1.6 : 1.5;
-  const cardFill = isMobile ? 0.9 : 1.2;
+  const FILL     = isMobile ? 1.6 : 1.4;
+  const cardFill = isMobile ? 0.9 : 1.1;
 
   const tanHalfFov = Math.tan((camera.fov * Math.PI) / 360);
   const visibleHalfH = camera.position.z * tanHalfFov;
@@ -63,7 +63,7 @@ export function createCards(scene, camera) {
     const row = Math.floor(i / cols);
 
     // Cell center — shift the whole grid down to clear the nav bar
-    const navOffset = visibleHalfH * (isMobile ? 0.50 : 0.10);
+    const navOffset = visibleHalfH * (isMobile ? 0.50 : 0.22);
     const cx = -spreadX + cellW * (col + 0.5);
     const cy =  spreadY - cellH * (row + 0.5) - navOffset;
 
@@ -77,8 +77,12 @@ export function createCards(scene, camera) {
     if (!isMobile && i === 0) x -= cellW * 0.6;    // FoT: left
     if (!isMobile && i === 1) x -= cellW * 0;    // Odyssey: right
     if (!isMobile && i === 3) y -= cellH * 0.3;    // K41: down
+    if (!isMobile && i === 3) x -= cellW * 0.3;    // K41: left
+    if (!isMobile && i === 5) x += cellW * 0.3;    // ID: right
     if (!isMobile && i === 11) y -= cellH * 1;   // Shudder: down
     if (!isMobile && i === 12) x -= cellW * 0.6;   // Were You Here: left
+    if (!isMobile && i === 15) y += cellH * 0.35;  // Here but when: up
+    if (!isMobile && i === 15) x += cellW * 0.35;  // Here but when: right
 
     if (isMobile && i === 13) y += cellW * 3;  // trans-intelligence
     if (isMobile && i === 4) y += cellW * 0.2;  // dynitiko

@@ -95,6 +95,33 @@ scene.add(sphereLines);
 const { cards, spreadX, spreadY } = createCards(scene, camera);
 initTargets(cards);
 
+// ─── Intro zoom-in animation ──────────────────────────────────────────────────
+// Cards are baked at startZ in createCards(); start the camera further back and
+// ease in over ~2 seconds. Runs after createCards so card positions are correct.
+const INTRO_DURATION_MS = 2000;
+const introStartZ = startZ * 1.6;
+camera.position.z = introStartZ;
+controls.enabled = false;
+const introStartTime = performance.now();
+let introDone = false;
+
+const zoomHintEl = document.getElementById('zoom-hint');
+function hideZoomHint() {
+  if (zoomHintEl) zoomHintEl.classList.add('hide');
+}
+
+function skipIntro() {
+  if (introDone) return;
+  introDone = true;
+  camera.position.z = startZ;
+  controls.enabled = true;
+  controls.update();
+  hideZoomHint();
+}
+['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach((evt) =>
+  window.addEventListener(evt, skipIntro, { once: true, passive: true })
+);
+
 // ─── 3D model thumbnails ───────────────────────────────────────────────────
 // Cards with a model3d field render a spinning 3D model as their texture.
 
@@ -450,6 +477,17 @@ window.addEventListener('resize', () => {
 
 function animate() {
   requestAnimationFrame(animate);
+
+  if (!introDone) {
+    const t = Math.min(1, (performance.now() - introStartTime) / INTRO_DURATION_MS);
+    const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    camera.position.z = introStartZ + (startZ - introStartZ) * eased;
+    if (t >= 1) {
+      introDone = true;
+      controls.enabled = true;
+      hideZoomHint();
+    }
+  }
 
   controls.update();              // apply damping to camera movement
 
