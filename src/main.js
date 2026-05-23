@@ -302,6 +302,7 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
     if (category !== 'all') btn.classList.add('active');
     applyFilter(cards, category);
     applySeqFilter(category);
+    seqView.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });
 
