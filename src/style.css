@@ -321,6 +321,14 @@ body.light .nav-label {
   padding: 80px 6vw;
   background: #000;
   font-weight: 400;
+  /* Everything ranges left, name included — overrides .page-body's centring. */
+  text-align: left;
+  align-items: flex-start;
+}
+
+/* Half the global h1 scale: the name sits with the text rather than over it. */
+.info h1 {
+  font-size: clamp(16px, 3vw, 36px);
 }
 
 .page-nav {
@@ -421,7 +429,7 @@ p {
 }
 
 .info .social-links {
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 48px;
 }
 
