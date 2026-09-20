@@ -17,6 +17,9 @@
   --color-active: #ffffff;
   --font-body: 'Roboto', Helvetica, Arial, sans-serif;
   --font-title: 'Apple Chancery', 'Palatino Linotype', Palatino, Georgia, serif;
+  /* Height of the nav row — set by the filter pills in the 3D scene's nav.
+     The sub-page nav matches it so index/info sit at the same height. */
+  --nav-row-h: 36px;
   font-family: var(--font-body);
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
@@ -101,11 +104,15 @@ body.light .view-toggle.active {
   align-items: center;
   justify-content: space-between;
   padding: 18px 28px;
+  min-height: var(--nav-row-h);
   /* subtle top gradient so text is readable over any 3D content */
   background: linear-gradient(to bottom, rgba(13, 10, 10, 0.7) 0%, transparent 100%);
 }
 
-.nav-left a {
+/* index/info links: identical type and placement on the 3D scene and on the
+   sub-pages. Only the colour differs, set per page below. */
+.nav-left a,
+.page-nav a {
   color: var(--color-text);
   text-decoration: none;
   font-size: 22px;
@@ -321,15 +328,15 @@ body.light .nav-label {
   z-index: 10;
   padding: 18px 28px;
   display: flex;
-  gap: 20px;
+  gap: 24px;
+  /* Match the 3D scene's nav row: there the links are centred against the
+     taller filter pills, so this row needs the same height to line up. */
+  align-items: center;
+  /* content-box so the row height is the pills' height, not height + padding —
+     the page otherwise inherits the global border-box and min-height does nothing. */
+  box-sizing: content-box;
+  min-height: var(--nav-row-h);
   background: linear-gradient(to bottom, rgba(13, 10, 10, 0.85) 0%, transparent 100%);
-}
-
-.page-nav a {
-  color: var(--color-text);
-  text-decoration: none;
-  font-size: 17px;
-  letter-spacing: 0.03em;
 }
 
 .page-nav a:hover {
@@ -1068,6 +1075,18 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+
+  /* #nav stacks and loses its centring here, so the links sit at the top of
+     the row — the sub-page nav has to drop its min-height to match. */
+  .page-nav {
+    padding: 14px 16px;
+    align-items: flex-start;
+    min-height: 0;
+  }
+
+  #nav .nav-left {
+    min-height: 0;
   }
 
   .nav-right,

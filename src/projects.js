@@ -257,8 +257,8 @@ export const projects = [
     title: 'ARchive: Human-Building Interaction Through Lived Archival Systems Across Space and Time',
     category: 'research',
     tagline: 'Book chapter, Springer 2026',
-    thumbnail: '/images/3d-scanning/thumb.png',
-    thumbScale: 0.6,
+    thumbnail: '/images/archive-hbi/thumb.png',
+    thumbScale: 0.9,
     text: `
       <p>Iliana Papadopoulou, Ava Fatah gen. Schieck, Sherif Tarabishy</p>
 
