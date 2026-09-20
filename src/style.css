@@ -20,6 +20,9 @@
   /* Height of the nav row — set by the filter pills in the 3D scene's nav.
      The sub-page nav matches it so index/info sit at the same height. */
   --nav-row-h: 36px;
+  /* Width of the sequential view's project list. Sections clear it on the
+     left so their text never runs underneath the titles. */
+  --seq-sidebar-w: 220px;
   font-family: var(--font-body);
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
@@ -869,7 +872,7 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 220px;
+  width: var(--seq-sidebar-w);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -904,7 +907,10 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
 
 .seq-project {
   position: relative;
-  padding: 80px 8vw;
+  /* Left padding clears the fixed sidebar, so content starts after the column
+     of titles. Padding rather than a margin on .seq-inner, so the section's
+     own background still runs full-bleed behind the list. */
+  padding: 80px 8vw 80px calc(var(--seq-sidebar-w) + 4vw);
   min-height: 100vh;
 }
 
@@ -1116,6 +1122,8 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
 
   .seq-project {
     padding-top: 140px;
+    /* The sidebar is an overlay here, not a column — reclaim the left space. */
+    padding-left: 8vw;
   }
 
   .page-body {

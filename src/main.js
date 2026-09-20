@@ -476,6 +476,54 @@ const inViewObserver = new IntersectionObserver((entries) => {
 });
 seqView.querySelectorAll('.seq-project').forEach((s) => inViewObserver.observe(s));
 
+// Scroll the sequential container to a section, and keep it there.
+//
+// offsetTop is only valid for the instant it is read. Every section above the
+// target holds images with loading="lazy" and no reserved height, so as the
+// scroll travels past them they load, the content above the target grows, and
+// the animation finishes thousands of pixels short — measured at ~16,800px for
+// the last project in the list. So after the scroll settles, re-align until the
+// target's position stops moving.
+function scrollSeqTo(target) {
+  seqView.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+
+  let cancelled = false;
+  const cancel = () => { cancelled = true; };
+  const cleanup = () => {
+    seqView.removeEventListener('wheel', cancel);
+    seqView.removeEventListener('touchstart', cancel);
+  };
+  // If the visitor starts scrolling themselves, stop correcting.
+  seqView.addEventListener('wheel', cancel, { passive: true });
+  seqView.addEventListener('touchstart', cancel, { passive: true });
+
+  const realign = () => {
+    const deadline = performance.now() + 6000;
+    let stable = 0;
+    const step = () => {
+      if (cancelled) return cleanup();
+      const top = target.offsetTop;
+      if (Math.abs(seqView.scrollTop - top) > 2) {
+        // 'instant', not 'auto' — the container sets scroll-behavior: smooth in
+        // CSS, and 'auto' would defer to it and animate each correction.
+        seqView.scrollTo({ top, behavior: 'instant' });
+        stable = 0;
+      } else {
+        stable += 1;
+      }
+      if (stable < 12 && performance.now() < deadline) requestAnimationFrame(step);
+      else cleanup();
+    };
+    requestAnimationFrame(step);
+  };
+
+  // Correct once the initial animation has finished, so it isn't cut short.
+  let fired = false;
+  const runOnce = () => { if (!fired) { fired = true; realign(); } };
+  seqView.addEventListener('scrollend', runOnce, { once: true });
+  setTimeout(runOnce, 900); // fallback where scrollend is unsupported
+}
+
 // Sidebar click → smooth scroll to project section within the sequential container
 const seqSidebar = seqView.querySelector('.seq-sidebar');
 seqSidebar.addEventListener('click', (e) => {
@@ -483,9 +531,7 @@ seqSidebar.addEventListener('click', (e) => {
   if (!link) return;
   e.preventDefault();
   const target = seqView.querySelector(`#seq-${link.dataset.slug}`);
-  if (target) {
-    seqView.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
-  }
+  if (target) scrollSeqTo(target);
   // On mobile, close the sidebar after selecting a project
   seqSidebar.classList.remove('open');
 });
