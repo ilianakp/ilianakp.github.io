@@ -9,6 +9,8 @@
 //   links       — array of { label, url } shown as pill buttons (use for external links)
 //   videoBg     — optional Vimeo/YouTube embed URL: plays as full-width hero at top of page
 //   images      — array of image paths OR { src, caption } objects for the gallery
+//   imagesCredit— optional single credit line shown under the whole gallery
+//   galleryLayout — 'justified': one full-width row, all images the same height
 //   tagline     — short plain-text description shown under title on hover in 3D scene
 //   videos      — array of YouTube/Vimeo embed URLs (shown as iframes below images)
 //
@@ -606,6 +608,98 @@ export const projects = [
       },
     ],
     images: [],
+    videos: [],
+  },
+  {
+    slug: 'modelling-distance',
+    title: 'Modelling Distance',
+    category: ['research', 'interactive'],
+    tagline: 'Talk & web piece, KÆNA Athens',
+    thumbnail: '/images/modelling-distance/thumb.png',
+    // A screen recording of the descent, rather than the live piece: the
+    // deployed build is currently broken, and the piece is scroll-driven
+    // anyway. Unlisted on YouTube; rel=0 keeps end screens off other channels.
+    videoBg: 'https://www.youtube.com/embed/jLtNkPVGIcY?autoplay=1&loop=1&mute=1&playlist=jLtNkPVGIcY&controls=0&showinfo=0&rel=0',
+    text: `
+      <p>Talk and web piece<br>
+      KÆNA TALKS: From Concrete to Code<br>
+      Leonnatou 4, Metaxourgeio, Athens<br>
+      23 June 2026</p>
+
+      <p>Presented alongside Danae Parissi (MasterBuilder Product Lead, AUAR) and a
+      video contribution by Pedro Fiori Arantes (Federal University of São Paulo),
+      closing KÆNA's three-part programme of reading room, zine workshop and talks on
+      how technological shifts reshape the production of space and the conditions of
+      architectural labour.</p>
+
+      <p><em>Modelling Distance — Η μοντελοποίηση της απόστασης</em> is a single-screen live web piece where scrolling drives the
+      altitude of a Google Earth camera, descending continuously from the whole
+      planet toward the ground. Seeing the interface of the presentation, you are told, continuously, how
+      far away you are.</p>
+
+      <p>It opens with a question. How many buildings in the world were actually designed
+      by an architect, and how many of those through a screen, for a place with no
+      connection to at all? No answer is offered.</p>
+
+      <p>The argument is the loop of the model. Digital tools shape what design can be. The model reads the world, abstracts it
+       and re-introduces the world as the world we then design within. Around 95% of
+      the built environment is vernacular, built without an architect. The rest is
+      increasingly drawn on a screen, for a place the person drawing has no connection to.
+      </p>
+
+      <p>Referencing Bratton's <em>The Stack</em>, cloud, networks, data and
+      platforms are not a tool inside society but planetary-scale infrastructure that
+      changes what it means to design, to govern, to inhabit. He calls that structure a
+      model. At once it is a description of how the world already works and a plan for how it
+      could be designed.</p>
+
+      <p>The archive has always been a
+      repository of collective memory, and it is moving from an orthographic practice,
+      drawings, plans, static representations, to post-orthographic, near real-time
+      interfaces. Machines now perceive space: through computer vision and deep learning a
+      3D scan becomes structured spatial information, where size, colour, objects, even
+      movement through a room can be interpreted and archived. Whoever controls the archive
+      defines what stays designable, what we remember was done, and what can be done again.</p>
+
+      <p>Three projects were presented, all of them work from practice: funded research
+      carried out with universities, design tools built inside globally operating
+      architectural offices, and projects run directly with municipalities. One
+      consolidates knowledge about planting in the built
+      environment, scattered across many sources, into a single open dataset, free to download
+      and open to correction, for the people designing green space, often for sites very far
+      from them. One turns a plot or a whole neighbourhood into maps of sun, shadow, wind and
+      thermal comfort, so that a place arrives as analysis. One works at the scale of a city committed to climate
+      neutrality, where what gets recorded matters less than how it is communicated: how these
+      tools explain new development to the people who live there, and how those people are
+      brought into the decision. Each sits at a different distance from the ground. A dataset,
+      a site, a city. And each is an attempt to shorten that distance rather than widen it, by
+      opening the data, by making the analysis legible, by handing part of the reading back to
+      the people the model is about.</p>
+
+      <p>References: Jean Baudrillard, <em>Simulacra and Simulation</em>; Benjamin H. Bratton,
+      <em>The Stack: On Software and Sovereignty</em>; Beatriz Colomina and Mark Wigley,
+      <em>Are we human? notes on an archaeology of design</em>.</p>
+    `,
+    links: [
+      {
+        label: 'Watch the descent',
+        url: 'https://youtu.be/jLtNkPVGIcY',
+      },
+      {
+        label: 'KÆNA - From Concrete to Code',
+        url: 'https://kaena-athens.com/from-concrete-to-code-1',
+      },
+      {
+        label: 'Source',
+        url: 'https://github.com/ilianakp/modelling-distance',
+      },
+    ],
+    images: [
+      '/images/modelling-distance/audience.jpg',
+      '/images/modelling-distance/presenting.jpg',
+    ],
+    galleryLayout: 'justified',
+    imagesCredit: 'Photos: KÆNA',
     videos: [],
   },
 ];

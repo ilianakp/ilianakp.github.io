@@ -326,7 +326,9 @@ function figureHTML(item) {
   const caption = typeof item === 'string' ? '' : (item.caption || '');
   const half = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
   return `<figure class="project-figure${half}">
-    <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+    <img src="${src}" alt="" loading="lazy"
+      onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
+      onerror="this.parentElement.style.display='none'" />
     ${caption ? `<figcaption>${caption}</figcaption>` : ''}
   </figure>`;
 }
@@ -375,10 +377,31 @@ function renderSeqProject(p) {
     bodyHTML = `
       <div class="project-text">${p.text}</div>
       ${linksHTML}
-      ${(p.images || []).length ? `<div class="project-gallery">
+      ${(p.images || []).length ? `<div class="project-gallery${
+        p.galleryLayout === 'justified' ? ' project-gallery--justified' : ''
+      }">
         ${p.images.map(figureHTML).join('')}
-      </div>` : ''}
+      </div>${p.imagesCredit ? `<p class="project-gallery-credit">${p.imagesCredit}</p>` : ''}` : ''}
       ${videosHTML}`;
+  }
+
+  // A project that IS a website shows a poster here, never a live iframe —
+  // an interactive frame inside this scrolling list would trap the wheel.
+  // The full piece opens in its own tab.
+  if (p.siteEmbed) {
+    const s = p.siteEmbed;
+    bodyHTML = `
+      <div class="site-embed">
+        <div class="site-embed-poster">
+          ${s.hud ? `<div class="site-embed-hud">${s.hud}</div>` : ''}
+          <div class="site-embed-meta">
+            <span class="site-embed-title">${s.title || p.title}</span>
+            ${s.subtitle ? `<span class="site-embed-sub">${s.subtitle}</span>` : ''}
+          </div>
+          <a class="site-embed-enter" href="${s.url}" target="_blank" rel="noopener">open the piece ↗</a>
+          ${s.note ? `<p class="site-embed-note">${s.note}</p>` : ''}
+        </div>
+      </div>` + bodyHTML;
   }
 
   // Determine background type and build corresponding markup
@@ -388,7 +411,7 @@ function renderSeqProject(p) {
 
   if (p.videoBg) {
     bgClass = 'seq-project--video';
-    bgMarkup = `<div class="seq-bg-fixed"><iframe src="${p.videoBg}" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div><div class="seq-bg-scrim"></div>`;
+    bgMarkup = `<div class="seq-bg-fixed" data-iframe-src="${p.videoBg}"></div><div class="seq-bg-scrim"></div>`;
   } else if (p.imageBg) {
     bgClass = 'seq-project--image';
     bgMarkup = `<div class="seq-bg-fixed" style="background: url('${p.imageBg}') center/cover no-repeat"></div><div class="seq-bg-scrim"></div>`;
@@ -413,6 +436,45 @@ const navItems = orderedProjects.map((p) =>
 seqView.innerHTML = `
   <nav class="seq-sidebar">${navItems}</nav>
   <div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
+
+// Lazy-mount video iframes: insert the iframe only when its section is near the
+// viewport, remove it when scrolled far away. Keeps DOM light during scroll —
+// otherwise ~11 autoplaying iframes recompute on every fixed-position scroll frame.
+const iframeObserver = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    const el = entry.target;
+    if (entry.isIntersecting) {
+      if (!el.firstChild) {
+        const iframe = document.createElement('iframe');
+        iframe.src = el.dataset.iframeSrc;
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', '');
+        el.appendChild(iframe);
+      }
+    } else if (el.firstChild) {
+      el.removeChild(el.firstChild);
+    }
+  }
+}, {
+  root: seqView,
+  rootMargin: '200% 0px',
+  threshold: 0,
+});
+seqView.querySelectorAll('.seq-bg-fixed[data-iframe-src]').forEach((el) => iframeObserver.observe(el));
+
+// Mark whichever section currently crosses the viewport centre as .in-view, so
+// only its (position:fixed) bg + scrim are at opacity 1. Prevents multiple
+// fixed bgs stacking — the bug that made GeoPlant's bg dominate on mobile.
+const inViewObserver = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    entry.target.classList.toggle('in-view', entry.isIntersecting);
+  }
+}, {
+  root: seqView,
+  rootMargin: '-50% 0px -50% 0px',  // only the centre line of the viewport counts
+});
+seqView.querySelectorAll('.seq-project').forEach((s) => inViewObserver.observe(s));
 
 // Sidebar click → smooth scroll to project section within the sequential container
 const seqSidebar = seqView.querySelector('.seq-sidebar');

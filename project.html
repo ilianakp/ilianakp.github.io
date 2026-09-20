@@ -42,6 +42,36 @@
              </div>`
           : '';
 
+        // ── One credit line for the whole gallery (instead of per-image) ─────
+        const creditHTML = project.imagesCredit
+          ? `<p class="project-gallery-credit">${project.imagesCredit}</p>`
+          : '';
+
+        // ── Category label (a project can carry more than one tag) ───────────
+        const catHTML = `<span class="tag">${
+          Array.isArray(project.category) ? project.category.join(' · ') : project.category
+        }</span>`;
+
+        // ── Live site embed ──────────────────────────────────────────────────
+        // Some projects ARE websites. They are scroll-driven, so mounting the
+        // iframe straight away would swallow the wheel and trap the visitor.
+        // Instead: a poster panel, and the iframe is mounted on click.
+        const s = project.siteEmbed;
+        const embedHTML = s
+          ? `<div class="site-embed" id="site-embed">
+              <div class="site-embed-poster">
+                ${s.hud ? `<div class="site-embed-hud">${s.hud}</div>` : ''}
+                <div class="site-embed-meta">
+                  <span class="site-embed-title">${s.title || project.title}</span>
+                  ${s.subtitle ? `<span class="site-embed-sub">${s.subtitle}</span>` : ''}
+                </div>
+                <button class="site-embed-enter" type="button">enter ↓</button>
+                ${s.note ? `<p class="site-embed-note">${s.note}</p>` : ''}
+                <a class="site-embed-out" href="${s.url}" target="_blank" rel="noopener">open fullscreen ↗</a>
+              </div>
+             </div>`
+          : '';
+
         // ── Image gallery (supports plain strings or { src, caption } objects) ──
         const imagesHTML = project.images.length
           ? `<div class="project-gallery">
@@ -99,8 +129,13 @@
           const src     = typeof item === 'string' ? item : item.src;
           const caption = typeof item === 'string' ? '' : (item.caption || '');
           const half    = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
+          // --ar carries the image's real aspect ratio to CSS, so a justified
+          // gallery can size each figure proportionally and land every image
+          // on the same height.
           return `<figure class="project-figure${half}">
-            <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+            <img src="${src}" alt="" loading="lazy"
+              onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
+              onerror="this.parentElement.style.display='none'" />
             ${caption ? `<figcaption>${caption}</figcaption>` : ''}
           </figure>`;
         }
@@ -113,7 +148,8 @@
           container.innerHTML = `
             <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
-            <span class="tag">${project.category}</span>
+            ${catHTML}
+            ${embedHTML}
 
             <div class="layout-featured">
               <div class="featured-left">${leftImages.map(figureHTML).join('')}</div>
@@ -134,7 +170,8 @@
           container.innerHTML = `
             <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
-            <span class="tag">${project.category}</span>
+            ${catHTML}
+            ${embedHTML}
 
             <div class="layout-two-column">
               <div class="two-col-left">${leftImgs}</div>
@@ -149,7 +186,7 @@
 
             ${project.images.length ? `<div class="project-gallery two-col-gallery">
               ${project.images.map(figureHTML).join('')}
-            </div>` : ''}
+            </div>${creditHTML}` : ''}
             ${videosHTML}
           `;
 
@@ -224,14 +261,49 @@
           container.innerHTML = `
             <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
-            <span class="tag">${project.category}</span>
+            ${catHTML}
+            ${embedHTML}
             <div class="project-text">${project.text}</div>
             ${linksHTML}
-            ${project.images.length ? `<div class="project-gallery">
+            ${project.images.length ? `<div class="project-gallery${
+              project.galleryLayout === 'justified' ? ' project-gallery--justified' : ''
+            }">
               ${project.images.map(figureHTML).join('')}
-            </div>` : ''}
+            </div>${creditHTML}` : ''}
             ${videosHTML}
           `;
+        }
+
+        // ── Mount the live site embed on click ────────────────────────────────
+        // The iframe is created only when asked for: it costs a Google 3D Tiles
+        // session, and an unasked-for scroll trap is worse than a poster.
+        // "release" puts pointer-events back so the visitor can scroll on.
+        if (s) {
+          const wrap = document.getElementById('site-embed');
+          wrap.querySelector('.site-embed-enter').addEventListener('click', () => {
+            const iframe = document.createElement('iframe');
+            iframe.src = s.url;
+            iframe.title = s.title || project.title;
+            iframe.setAttribute('allow', 'fullscreen');
+            iframe.loading = 'lazy';
+
+            const bar = document.createElement('div');
+            bar.className = 'site-embed-bar';
+            bar.innerHTML = `
+              <button class="site-embed-release" type="button">release scroll</button>
+              <a href="${s.url}" target="_blank" rel="noopener">fullscreen ↗</a>`;
+
+            wrap.innerHTML = '';
+            wrap.classList.add('site-embed--live');
+            wrap.append(iframe, bar);
+
+            bar.querySelector('.site-embed-release').addEventListener('click', () => {
+              wrap.classList.toggle('site-embed--released');
+              const released = wrap.classList.contains('site-embed--released');
+              bar.querySelector('.site-embed-release').textContent =
+                released ? 'take scroll' : 'release scroll';
+            });
+          });
         }
 
         // ── Next project footer ───────────────────────────────────────────────

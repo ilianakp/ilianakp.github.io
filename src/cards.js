@@ -23,10 +23,12 @@ const JITTER = [
   [ 0.25,  0.15], [-3,  0.15], [ 0.10, -0.25], [-0.10,  0.20],
   [ 0.20, -0.10], [-0.25, -0.15], [-5, -0.8], [-0.10, -0.20],
   [ 0.25,  0.10], [-0.20,  0.20],
+  [ 0,     0    ], // here-but-when — kept flat, as it was before this array grew
+  [ 0.25, -0.20], // modelling-distance
 ];
 
 // Small per-card z variation layered on top of the spherical base depth
-const DEPTHS = [-15, -2, -45, -20, -60, -25, -55, -20, -55, -200, -55, -160, -15, -45, -70];
+const DEPTHS = [-15, -2, -45, -20, -60, -25, -55, -20, -55, -200, -55, -160, -15, -45, -70, 0, -40];
 
 
 // createCards now takes the camera so it can read the real frustum size at load time.
@@ -83,6 +85,8 @@ export function createCards(scene, camera) {
     if (!isMobile && i === 12) x -= cellW * 0.6;   // Were You Here: left
     if (!isMobile && i === 15) y += cellH * 0.35;  // Here but when: up
     if (!isMobile && i === 15) x += cellW * 0.35;  // Here but when: right
+    if (!isMobile && i === 16) x += cellW * 0.95;  // Modelling Distance: right, clear of the point cloud
+    if (!isMobile && i === 16) y -= cellH * 0.15;  // Modelling Distance: down
 
     if (isMobile && i === 13) y += cellW * 3;  // trans-intelligence
     if (isMobile && i === 4) y += cellW * 0.2;  // dynitiko

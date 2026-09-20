@@ -692,6 +692,51 @@ body.has-video-bg .project-figure figcaption {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
   margin-bottom: 40px;
+  /* Centre images of differing heights on a shared axis rather than
+     letting short ones hang from the top of the row. */
+  align-items: center;
+}
+
+/* Justified row: every image lands on the same height and the row fills the
+   full width. Each figure grows in proportion to its own aspect ratio (--ar,
+   set from the image's natural size on load), so width ÷ ratio — the rendered
+   height — comes out identical for all of them, at any container width. */
+.project-gallery--justified {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.project-gallery--justified .project-figure {
+  flex: var(--ar, 1) 1 0;
+  min-width: 0;
+}
+
+.project-gallery--justified .project-figure img {
+  width: 100%;
+  height: auto;
+}
+
+/* Narrow screens: a two-up justified row gets too small — stack instead. */
+@media (max-width: 640px) {
+  .project-gallery--justified {
+    flex-direction: column;
+  }
+}
+
+/* One credit line for a whole gallery, in place of per-image captions. */
+.project-gallery-credit {
+  margin: -28px 0 40px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+  letter-spacing: 0.02em;
+}
+
+body.has-video-bg .project-gallery-credit {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .project-figure {
@@ -802,6 +847,7 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   z-index: 1;
   background: transparent;
   overflow-y: auto;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -816,25 +862,25 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 160px;
+  width: 220px;
   z-index: 10;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  padding: 80px 16px 40px;
+  padding: 80px 20px 40px;
   background: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
 }
 
 .seq-nav-item {
   font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0.03em;
   color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
   transition: color 0.2s;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .seq-nav-item:hover {
@@ -851,7 +897,6 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
 
 .seq-project {
   position: relative;
-  clip-path: inset(0);    /* clips fixed children to section bounds */
   padding: 80px 8vw;
   min-height: 100vh;
 }
@@ -861,12 +906,19 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
 }
 
 /* ── Fixed background (video or image) ─────────────────────────────────── */
+/* Each section's bg is position:fixed so it stays anchored to viewport while
+   the section is visible (continuous parallax look). Initially opacity 0;
+   the JS IntersectionObserver adds .in-view to whichever section's centre
+   currently passes the viewport centre, raising only that bg to opacity 1.
+   This avoids the mobile bug where multiple fixed bgs stacked over the viewport. */
 
 .seq-bg-fixed {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 .seq-bg-fixed iframe {
@@ -882,11 +934,19 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   z-index: 1;
   background: rgba(0, 0, 0, 0.55);
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.seq-project.in-view .seq-bg-fixed,
+.seq-project.in-view .seq-bg-scrim {
+  opacity: 1;
 }
 
 .seq-project-content {
   position: relative;
   z-index: 2;
+  overflow-wrap: break-word;
 }
 
 /* ── Dark bg sections (video + image): white text ──────────────────────── */
@@ -934,42 +994,45 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   color: rgba(255, 255, 255, 0.35);
 }
 
-/* ── Light bg sections (no video/image): dark text on white ────────────── */
+/* ── Media-less sections: dark gradient fallback so the view feels coherent ── */
 
 .seq-project--light {
-  background: #fff;
+  background: linear-gradient(160deg, #1a0e0e 0%, #0d0a0a 100%);
 }
 
 .seq-project--light .seq-title {
-  color: #111;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .seq-project--light .seq-tagline {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .seq-project--light .project-text,
 .seq-project--light .project-text p {
-  color: #222;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .seq-project--light .project-text h3 {
-  color: #111;
+  color: #fff;
   font-weight: 700;
 }
 
 .seq-project--light .project-link-btn {
-  color: #111;
-  border-color: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.4);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .seq-project--light .project-link-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .seq-project--light .project-figure figcaption {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 #sequential-view .project-figure img {
@@ -1039,4 +1102,167 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   .page-body {
     padding: 90px 16px 60px;
   }
+}
+
+/* ── Live site embed (a project that IS a website) ───────────────────────────
+   The embedded piece is scroll-driven, so it is click-to-load and its
+   pointer-events can be released again — otherwise the iframe eats the wheel
+   and the visitor can never scroll past it. */
+
+.site-embed {
+  position: relative;
+  width: 100%;
+  height: 78vh;
+  min-height: 420px;
+  margin: 28px 0 40px;
+  background: #0a0b0d;
+  overflow: hidden;
+}
+
+.site-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Released: the page takes the wheel back, the piece keeps playing behind. */
+.site-embed--released iframe {
+  pointer-events: none;
+}
+
+.site-embed-poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 24px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(63, 182, 168, 0.10), transparent 62%),
+    #0a0b0d;
+}
+
+.site-embed-hud {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #3fb6a8;
+  opacity: 0.85;
+}
+
+.site-embed-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.site-embed-title {
+  font-family: var(--font-title);
+  font-size: clamp(26px, 4.5vw, 44px);
+  color: #edede8;
+}
+
+.site-embed-sub {
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: rgba(237, 237, 232, 0.55);
+}
+
+.site-embed-enter {
+  margin-top: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: #edede8;
+  background: none;
+  border: 1px solid rgba(237, 237, 232, 0.4);
+  border-radius: 999px;
+  padding: 8px 26px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.site-embed-enter:hover {
+  background: rgba(237, 237, 232, 0.08);
+  border-color: rgba(237, 237, 232, 0.75);
+}
+
+.site-embed-note {
+  max-width: 34ch;
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(237, 237, 232, 0.55);
+}
+
+.site-embed-out {
+  position: absolute;
+  bottom: 16px;
+  right: 18px;
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(237, 237, 232, 0.45);
+  text-decoration: none;
+}
+
+.site-embed-out:hover {
+  color: rgba(237, 237, 232, 0.85);
+}
+
+.site-embed-bar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.site-embed-bar button,
+.site-embed-bar a {
+  font-family: inherit;
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: rgba(237, 237, 232, 0.8);
+  background: rgba(10, 11, 13, 0.6);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(237, 237, 232, 0.25);
+  border-radius: 999px;
+  padding: 5px 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.site-embed-bar button:hover,
+.site-embed-bar a:hover {
+  color: #fff;
+  border-color: rgba(237, 237, 232, 0.6);
+}
+
+/* Sequential view: poster only, never a live frame inside the scrolling list. */
+.seq-project .site-embed {
+  height: 52vh;
+  min-height: 300px;
+}
+
+@media (max-width: 700px) {
+  .site-embed {
+    height: 62vh;
+  }
+}
+
+/* Category line on a light project page — .tag is defined white for the 3D
+   scene, which made it invisible here. Video/image heroes keep the white. */
+body:not(.has-video-bg) .page-body.project .tag {
+  color: rgba(0, 0, 0, 0.45);
 }
