@@ -28,7 +28,6 @@
       if (!project) {
         container.innerHTML = `
           <h1>Project not found</h1>
-          <a class="back-link" href="/">← index</a>
         `;
       } else {
         document.title = `${project.title} — Iliana Papadopoulou`;
@@ -146,7 +145,6 @@
           const leftImages = project.images.slice(0, leftCount);
           const rest = project.images.slice(leftCount);
           container.innerHTML = `
-            <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
             ${catHTML}
             ${embedHTML}
@@ -168,7 +166,6 @@
           const leftImgs = (project.leftImages || []).map(figureHTML).join('');
           const rightImgs = (project.rightImages || []).map(figureHTML).join('');
           container.innerHTML = `
-            <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
             ${catHTML}
             ${embedHTML}
@@ -259,7 +256,6 @@
         // ── Layout: default ───────────────────────────────────────────────────
         } else {
           container.innerHTML = `
-            <a class="back-link" href="/">← index</a>
             <h1>${project.title}</h1>
             ${catHTML}
             ${embedHTML}

@@ -433,6 +433,9 @@ const seqView = document.getElementById('sequential-view');
 const navItems = orderedProjects.map((p) =>
   `<a class="seq-nav-item" href="#seq-${p.slug}" data-slug="${p.slug}">${p.title}</a>`
 ).join('');
+// The progress bar is drawn as a rule on each title (.seq-nav-item::before),
+// not as a separate column — that way every segment is exactly as tall as its
+// own title and the two can never drift out of alignment.
 seqView.innerHTML = `
   <nav class="seq-sidebar">${navItems}</nav>
   <div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
@@ -440,9 +443,18 @@ seqView.innerHTML = `
 // Lazy-mount video iframes: insert the iframe only when its section is near the
 // viewport, remove it when scrolled far away. Keeps DOM light during scroll —
 // otherwise ~11 autoplaying iframes recompute on every fixed-position scroll frame.
+//
+// Observe the SECTION, not the .seq-bg-fixed layer. The layer is
+// position: fixed, so its containing block is the viewport — and an
+// IntersectionObserver with an element root only reports intersections when
+// the root is in the target's containing-block chain. #sequential-view has no
+// transform, so it never is: observing the layer directly reports false
+// forever and the video never mounts. The section is in normal flow, so it
+// intersects correctly.
 const iframeObserver = new IntersectionObserver((entries) => {
   for (const entry of entries) {
-    const el = entry.target;
+    const el = entry.target.querySelector('.seq-bg-fixed[data-iframe-src]');
+    if (!el) continue;
     if (entry.isIntersecting) {
       if (!el.firstChild) {
         const iframe = document.createElement('iframe');
@@ -461,7 +473,17 @@ const iframeObserver = new IntersectionObserver((entries) => {
   rootMargin: '200% 0px',
   threshold: 0,
 });
-seqView.querySelectorAll('.seq-bg-fixed[data-iframe-src]').forEach((el) => iframeObserver.observe(el));
+seqView.querySelectorAll('.seq-project').forEach((section) => {
+  if (section.querySelector('.seq-bg-fixed[data-iframe-src]')) iframeObserver.observe(section);
+});
+
+// Mark one project as the one being read: its segment on the left-hand bar goes
+// to full white, and its title in the list brightens.
+function setActiveSeqProject(slug) {
+  seqView.querySelectorAll('.seq-nav-item').forEach((item) => {
+    item.classList.toggle('seq-nav-item--active', item.dataset.slug === slug);
+  });
+}
 
 // Mark whichever section currently crosses the viewport centre as .in-view, so
 // only its (position:fixed) bg + scrim are at opacity 1. Prevents multiple
@@ -469,6 +491,8 @@ seqView.querySelectorAll('.seq-bg-fixed[data-iframe-src]').forEach((el) => ifram
 const inViewObserver = new IntersectionObserver((entries) => {
   for (const entry of entries) {
     entry.target.classList.toggle('in-view', entry.isIntersecting);
+    // Light this project's segment on the left-hand bar, and its title in the list.
+    if (entry.isIntersecting) setActiveSeqProject(entry.target.id.replace('seq-', ''));
   }
 }, {
   root: seqView,

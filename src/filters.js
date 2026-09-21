@@ -22,7 +22,9 @@ export function applyFilter(cards, activeCategory) {
       (Array.isArray(cat) ? cat.includes(activeCategory) : cat === activeCategory);
     const t = targets.get(card);
     t.opacity = visible ? 1 : 0.08;
-    t.scale = visible ? 1 : 0.6;
+    // Filtering fades only — cards keep their size, so the scene doesn't
+    // reflow and depth stays the only thing driving how big a card reads.
+    t.scale = 1;
   });
 }
 

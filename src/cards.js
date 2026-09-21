@@ -9,6 +9,12 @@
 import * as THREE from 'three';
 import { projects } from './projects.js';
 
+// Uniform framed thumbnails: every card is the same square, transparent inside
+// with a thin black outline, the project image centred within it. Pre-rendered
+// into /images/_frames/ so hover, click and the filters keep working on a
+// single mesh per project. Set to false for the original per-image cut-outs.
+const FRAMED_THUMBS = true;
+
 // Placeholder color per category — shown before real images are added
 // Desaturated pastels that read well on the warm off-white background
 const PLACEHOLDER_COLORS = {
@@ -28,7 +34,9 @@ const JITTER = [
 ];
 
 // Small per-card z variation layered on top of the spherical base depth
-const DEPTHS = [-15, -2, -45, -20, -60, -25, -55, -20, -55, -200, -55, -160, -15, -45, -70, 0, -40];
+//                 0    1    2    3    4    5    6    7    8    9   10    11   12   13   14  15  16
+//                fot  ody  dp  k41  dyn  id  hbi  3ds  mn  arch geo  pen  shu  wyh  ti  hbw  md
+const DEPTHS = [-15, -2, -45, -90, -60, -25, -55, -20, -55, -70, -55, -160, -15, -45, -70, -85, -40];
 
 
 // createCards now takes the camera so it can read the real frustum size at load time.
@@ -118,10 +126,14 @@ export function createCards(scene, camera) {
 
     // Load the real image — resize the card to match the image's aspect ratio
     loader.load(
-      project.thumbnail,
+      FRAMED_THUMBS ? `/images/_frames/${project.slug}.png` : project.thumbnail,
       (texture) => {
+        // Keeps the thin outline from breaking up on cards sitting far back.
+        texture.anisotropy = 8;
         const imgAspect = texture.image.width / texture.image.height;
-        const scale = project.thumbScale ?? 1;
+        // Framed cards are all one size by definition, so the per-project
+        // thumbScale corrections don't apply.
+        const scale = FRAMED_THUMBS ? 1 : (project.thumbScale ?? 1);
         const w = (imgAspect >= 1 ? cardMax : cardMax * imgAspect) * scale;
         const h = (imgAspect >= 1 ? cardMax / imgAspect : cardMax) * scale;
         mesh.geometry.dispose();

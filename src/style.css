@@ -471,19 +471,6 @@ p {
   color: #222;
 }
 
-.back-link {
-  display: inline-block;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.4);
-  text-decoration: none;
-  margin-bottom: 36px;
-}
-
-.back-link:hover {
-  color: rgba(0, 0, 0, 0.8);
-}
-
 .project-text {
   margin: 24px 0 32px;
 }
@@ -568,14 +555,6 @@ body.has-video-bg .page-body.project .tag {
 body.has-video-bg .project-text h3 {
   color: #fff;
   font-weight: 700;
-}
-
-body.has-video-bg .back-link {
-  color: rgba(255, 255, 255, 0.45);
-}
-
-body.has-video-bg .back-link:hover {
-  color: rgba(255, 255, 255, 0.9);
 }
 
 body.has-video-bg .project-text a {
@@ -899,6 +878,24 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
   text-decoration: none;
   transition: color 0.2s;
   line-height: 1.5;
+  /* Room for the bar segment, which is drawn as this item's own ::before. */
+  position: relative;
+  padding-left: 14px;
+}
+
+/* One piece of the progress bar per project. Because it is the title's own
+   pseudo-element it spans exactly that title's height, so a title and its
+   segment share a centre line however many lines the title wraps to. */
+.seq-nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.16);
+  transition: background 0.35s ease, width 0.35s ease;
 }
 
 .seq-nav-item:hover {
@@ -907,6 +904,16 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
 
 .seq-nav-item--dimmed {
   opacity: 0.25;
+}
+
+/* The project currently on screen: its segment goes to full white. */
+.seq-nav-item--active {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.seq-nav-item--active::before {
+  background: rgba(255, 255, 255, 0.95);
+  width: 5px;
 }
 
 .seq-project--hidden {

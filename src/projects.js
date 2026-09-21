@@ -285,7 +285,7 @@ export const projects = [
     title: 'An exploration of 3D scanning as spatial memory',
     category: 'research',
     tagline: 'Research & publication',
-    thumbnail: '/images/3d-scanning/thumb.png',
+    thumbnail: '/images/3d-scanning/eaea-thumbnail.png',
     thumbScale: 0.6,
     imageBg: '/images/3d-scanning/bg.jpg',
     text: `
@@ -401,7 +401,7 @@ export const projects = [
     title: 'GeoPlant',
     category: 'research',
     tagline: 'Research & web tool',
-    thumbnail: '/images/geoplant/thumb.png',
+    thumbnail: '/images/geoplant/plot.png',
     imageBg: '/images/geoplant/bg.png',
     layout: 'featured',
     featuredLeftCount: 1,
@@ -410,7 +410,7 @@ export const projects = [
       Copenhagen with a global target, 2023<br>
       Open-source plant database<br>
       Funded by the Ramboll Foundation & Henning Larsen<br>
-      Role: Project manager, UI/UX, Web development</p>
+      Role: Lead researcher, design and development of the interface</p>
 
       <p>Optimizing biodiversity-centred design, the new digital tool holds a wealth of global vegetation knowledge and data, providing designers with the means to prioritize native flora in projects. Biodiversity is declining faster than any other period in human history. For years, humans have introduced foreign and invasive species around the world devastating local ecosystems. Native flora are essential in maintaining ecological balance, providing food and habitats to wildlife, and supporting the intricate relationships that maintain ecosystem health and stability.</p>
 
