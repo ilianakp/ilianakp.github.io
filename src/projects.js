@@ -121,6 +121,7 @@ export const projects = [
       <p>MArch, Aristotle University of Thessaloniki<br>
       School of Architecture<br>
       Thesis project<br>
+      Exhibited at Tbilisi Architecture Biennale, Tbilisi, GE<br>
       June 2018</p>
       <p>Supervisors: Anastasios Tellios, Stavros Vergopoulos</p>
 
