@@ -200,7 +200,7 @@ export const projects = [
     title: 'Dynitikó',
     category: 'interactive',
     tagline: 'Interactive installation',
-    thumbnail: '/images/dynitiko/thumb.png',
+    thumbnail: '/images/dynitiko/render_red_square.jpeg',
     imageBg: '/images/dynitiko/bg.jpg',
     layout: 'featured',
     featuredLeftCount: 1,
