@@ -31,12 +31,13 @@ const JITTER = [
   [ 0.25,  0.10], [-0.20,  0.20],
   [ 0,     0    ], // here-but-when — kept flat, as it was before this array grew
   [ 0.25, -0.20], // modelling-distance
+  [-0.22,  0.18], // long-live-the-web
 ];
 
 // Small per-card z variation layered on top of the spherical base depth
 //                 0    1    2    3    4    5    6    7    8    9   10    11   12   13   14  15  16
 //                fot  ody  dp  k41  dyn  id  hbi  3ds  mn  arch geo  pen  shu  wyh  ti  hbw  md
-const DEPTHS = [-15, -2, -45, -90, -60, -25, -55, -20, -55, -70, -55, -160, -15, -45, -70, -85, -40];
+const DEPTHS = [-15, -2, -45, -90, -60, -25, -55, -20, -55, -70, -130, -160, -15, -45, -70, -85, -40, 20];
 
 
 // createCards now takes the camera so it can read the real frustum size at load time.
@@ -89,12 +90,15 @@ export function createCards(scene, camera) {
     if (!isMobile && i === 3) y -= cellH * 0.3;    // K41: down
     if (!isMobile && i === 3) x -= cellW * 0.3;    // K41: left
     if (!isMobile && i === 5) x += cellW * 0.3;    // ID: right
+    if (!isMobile && i === 10) x += cellW * 0.55;  // GeoPlant: right
     if (!isMobile && i === 11) y -= cellH * 1;   // Shudder: down
     if (!isMobile && i === 12) x -= cellW * 0.6;   // Were You Here: left
     if (!isMobile && i === 15) y += cellH * 0.35;  // Here but when: up
     if (!isMobile && i === 15) x += cellW * 0.35;  // Here but when: right
     if (!isMobile && i === 16) x += cellW * 0.95;  // Modelling Distance: right, clear of the point cloud
     if (!isMobile && i === 16) y -= cellH * 0.15;  // Modelling Distance: down
+    if (!isMobile && i === 17) y += cellH * 0.85;  // Long Live the Web: up
+    if (!isMobile && i === 17) x += cellW * 0.4;   // Long Live the Web: right
 
     if (isMobile && i === 13) y += cellW * 3;  // trans-intelligence
     if (isMobile && i === 4) y += cellW * 0.2;  // dynitiko

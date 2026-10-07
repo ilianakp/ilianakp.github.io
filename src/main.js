@@ -325,10 +325,19 @@ function figureHTML(item) {
   const src = typeof item === 'string' ? item : item.src;
   const caption = typeof item === 'string' ? '' : (item.caption || '');
   const half = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
-  return `<figure class="project-figure${half}">
-    <img src="${src}" alt="" loading="lazy"
-      onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
-      onerror="this.parentElement.style.display='none'" />
+  const full = (typeof item === 'object' && item.full) ? ' project-figure--full' : '';
+  const crop = (typeof item === 'object' && item.crop) ? item.crop : '';
+  const cropCls = crop ? ' project-figure--crop' : '';
+  const cropSty = crop ? ` style="--crop-ar: ${crop}"` : '';
+  const isVideo = /\.(mp4|webm|mov)$/i.test(src);
+  const media = isVideo
+    ? `<video src="${src}" autoplay loop muted playsinline preload="metadata"
+         onloadedmetadata="this.parentElement.style.setProperty('--ar', this.videoWidth / this.videoHeight)"></video>`
+    : `<img src="${src}" alt="" loading="lazy"
+         onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
+         onerror="this.parentElement.style.display='none'" />`;
+  return `<figure class="project-figure${half}${full}${cropCls}"${cropSty}>
+    ${media}
     ${caption ? `<figcaption>${caption}</figcaption>` : ''}
   </figure>`;
 }
@@ -343,11 +352,18 @@ function renderSeqProject(p) {
 
   let bodyHTML = '';
 
+  const topHTML = (p.topImages || []).length
+    ? `<div class="project-gallery project-gallery--justified project-gallery--top">
+        ${p.topImages.map(figureHTML).join('')}
+       </div>`
+    : '';
+
   if (p.layout === 'featured') {
     const leftCount = p.featuredLeftCount ?? 1;
     const leftImages = (p.images || []).slice(0, leftCount);
     const rest = (p.images || []).slice(leftCount);
     bodyHTML = `
+      ${topHTML}
       <div class="layout-featured">
         <div class="featured-left">${leftImages.map(figureHTML).join('')}</div>
         <div class="featured-right">

@@ -46,6 +46,13 @@
           ? `<p class="project-gallery-credit">${project.imagesCredit}</p>`
           : '';
 
+        // ── Top row: images spanning the full page width under the title ────
+        const topHTML = (project.topImages || []).length
+          ? `<div class="project-gallery project-gallery--justified project-gallery--top">
+              ${project.topImages.map(figureHTML).join('')}
+             </div>`
+          : '';
+
         // ── Category label (a project can carry more than one tag) ───────────
         const catHTML = `<span class="tag">${
           Array.isArray(project.category) ? project.category.join(' · ') : project.category
@@ -128,13 +135,24 @@
           const src     = typeof item === 'string' ? item : item.src;
           const caption = typeof item === 'string' ? '' : (item.caption || '');
           const half    = (typeof item === 'object' && item.half) ? ' project-figure--half' : '';
+          // full: span the whole gallery row. crop: trim letterboxing by giving
+          // the figure the content's own ratio and letting the media cover it.
+          const full    = (typeof item === 'object' && item.full) ? ' project-figure--full' : '';
+          const crop    = (typeof item === 'object' && item.crop) ? item.crop : '';
+          const cropCls = crop ? ' project-figure--crop' : '';
+          const cropSty = crop ? ` style="--crop-ar: ${crop}"` : '';
           // --ar carries the image's real aspect ratio to CSS, so a justified
           // gallery can size each figure proportionally and land every image
           // on the same height.
-          return `<figure class="project-figure${half}">
-            <img src="${src}" alt="" loading="lazy"
-              onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
-              onerror="this.parentElement.style.display='none'" />
+          const isVideo = /\.(mp4|webm|mov)$/i.test(src);
+          const media = isVideo
+            ? `<video src="${src}" autoplay loop muted playsinline preload="metadata"
+                 onloadedmetadata="this.parentElement.style.setProperty('--ar', this.videoWidth / this.videoHeight)"></video>`
+            : `<img src="${src}" alt="" loading="lazy"
+                 onload="this.parentElement.style.setProperty('--ar', this.naturalWidth / this.naturalHeight)"
+                 onerror="this.parentElement.style.display='none'" />`;
+          return `<figure class="project-figure${half}${full}${cropCls}"${cropSty}>
+            ${media}
             ${caption ? `<figcaption>${caption}</figcaption>` : ''}
           </figure>`;
         }
@@ -148,6 +166,7 @@
             <h1>${project.title}</h1>
             ${catHTML}
             ${embedHTML}
+            ${topHTML}
 
             <div class="layout-featured">
               <div class="featured-left">${leftImages.map(figureHTML).join('')}</div>

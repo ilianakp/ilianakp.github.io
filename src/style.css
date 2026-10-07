@@ -710,7 +710,8 @@ body.has-video-bg .project-figure figcaption {
   min-width: 0;
 }
 
-.project-gallery--justified .project-figure img {
+.project-gallery--justified .project-figure img,
+.project-gallery--justified .project-figure video {
   width: 100%;
   height: auto;
 }
@@ -743,10 +744,37 @@ body.has-video-bg .project-gallery-credit {
   gap: 8px;
 }
 
-.project-figure img {
+.project-figure img,
+.project-figure video {
   width: 100%;
   display: block;
   border-radius: 2px;
+}
+
+/* Span every column of the gallery grid. */
+.project-figure--full {
+  grid-column: 1 / -1;
+}
+
+/* Full-width row of images directly under the title. */
+.project-gallery--top {
+  margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+/* Trim baked-in letterboxing: the figure takes the content's true ratio and
+   the media covers it, so the bars fall outside the box. */
+.project-figure--crop {
+  aspect-ratio: var(--crop-ar);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.project-figure--crop img,
+.project-figure--crop video {
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
 }
 
 .project-figure figcaption {

@@ -703,4 +703,74 @@ export const projects = [
     imagesCredit: 'Photos: KÆNA',
     videos: [],
   },
+  {
+    slug: 'long-live-the-web',
+    title: 'Long Live the Web',
+    category: 'interactive',
+    tagline: 'Collective manifesto & HTML workshops',
+    thumbnail: '/images/long-live-the-web/thumb.jpg',
+    imageBg: '/images/long-live-the-web/wall-blurred.jpg',
+    text: `
+      <p>Collective practices against the algorithm<br>
+      In collaboration with <a href="https://softer.metalabel.com/" target="_blank" rel="noopener">SOFTER</a><br>
+      Hosted and co-organised with the team of Klif and Alexandra Olympia Peristeraki<br>
+      Athens, GR, 2026<br>
+      Role: Co-organiser, workshop facilitation, web development</p>
+
+      <p>Another Internet Manifesto, 19 April<br>
+      Weaving Webs of Wonder: HTML Workshops, April to July</p>
+
+      <p>Something is wrong with the internet and we all feel it. We gathered to name what
+      we already felt, the dysphoria of navigating an internet that was sold back to us
+      behind paywalls, stripped for data, and optimised into submission. The platforms we
+      inhabit have become extraction machines; the interfaces, funnels; the connections,
+      commodities.</p>
+
+      <p>The manifesto evening was a space to name that feeling together, honestly and
+      without rush. Through playful exercises we mapped the digital territories we inhabit,
+      drafted the principles we refuse to live without online, and imagined what it means to
+      truly embody the web rather than just consume it. We brought our love, our rage, and
+      our hope.</p>
+
+      <p>Technology can be intimidating and self-learning can feel overwhelming. How can we
+      take back our web and enjoy digital expression outside the walls of the Big Tech mall,
+      without the control of the algorithm? What began as a single weekend grew into a series
+      of workshops that continued through July. We learned to self-learn HTML, shared
+      resources and gentle guidance, and built simple webpages with HTML and CSS. Using the
+      principles and ideas drafted in the manifesto as our raw material, we built web pages
+      side by side. We broke things, fixed them, and discovered that making the internet is
+      simpler and more radical than we thought.</p>
+
+      <p>Αλεξάνδρα Ολυμπία Περιστεράκη, Kostis, Αλεξία Παντελιά, Iliana Papadopoulou,
+      Eleni Korda, Eirini Parthenidou</p>
+    `,
+    links: [
+      {
+        label: 'Webpages made in the workshop',
+        url: 'https://long-live-the-web.github.io/weaving-webs-of-wonder/',
+      },
+      {
+        label: 'are.na channel',
+        url: 'https://www.are.na/iliana-pap/long-live-the-web',
+      },
+      {
+        label: 'Event page',
+        url: 'https://softer.metalabel.com/long-live-the-web',
+      },
+    ],
+    topImages: [
+      '/images/long-live-the-web/poster-01.jpg',
+      '/images/long-live-the-web/poster-02.jpg',
+      '/images/long-live-the-web/poster-03.jpg',
+      '/images/long-live-the-web/poster-04.jpg',
+    ],
+    layout: 'featured',
+    featuredLeftCount: 1,
+    images: [
+      '/images/long-live-the-web/workshop.mp4',
+      // 1280x720 with 37px of black top and bottom — cropped to the real content.
+      { src: '/images/long-live-the-web/about.mp4', full: true, crop: '1280 / 646' },
+    ],
+    videos: [],
+  },
 ];
