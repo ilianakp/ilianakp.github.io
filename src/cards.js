@@ -130,7 +130,7 @@ export function createCards(scene, camera) {
 
     // Load the real image — resize the card to match the image's aspect ratio
     loader.load(
-      FRAMED_THUMBS ? `/images/_frames/${project.slug}.png` : project.thumbnail,
+      FRAMED_THUMBS ? `/images/_frames/${project.slug}.webp` : project.thumbnail,
       (texture) => {
         // Keeps the thin outline from breaking up on cards sitting far back.
         texture.anisotropy = 8;

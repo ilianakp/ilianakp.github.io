@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Master images live outside the repo — anything under public/ is deployed,
+# and these were shipping unused on every build.
+public/images_original/

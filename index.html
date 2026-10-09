@@ -8,6 +8,12 @@
   </head>
   <body class="light">
 
+    <!-- Real links to every project, for keyboard users and for crawlers.
+         The 3D cards are canvas pixels, so without these the project pages are
+         unreachable without a mouse and invisible to search engines.
+         Off-screen until focused, then they appear one at a time. -->
+    <nav id="project-index" aria-label="All projects"></nav>
+
     <!-- The Three.js canvas will be appended here by main.js -->
     <div id="canvas-container"></div>
 

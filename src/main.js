@@ -743,6 +743,15 @@ document.querySelectorAll('.sort-btn').forEach((btn) => {
   });
 });
 
+// Populate the hidden project index. Same data as the cards, but as real
+// anchors — tab-reachable, right-clickable, and crawlable.
+const projectIndex = document.getElementById('project-index');
+if (projectIndex) {
+  projectIndex.innerHTML = '<h2>Projects</h2><ul>' + projects.map((p) =>
+    `<li><a href="/project.html?id=${p.slug}">${p.title}${p.year ? ` (${p.year})` : ''}</a></li>`
+  ).join('') + '</ul>';
+}
+
 // ─── Resize handling ──────────────────────────────────────────────────────────
 
 window.addEventListener('resize', () => {

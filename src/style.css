@@ -1579,3 +1579,65 @@ body.view-sequential .cluster-labels {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Keyboard access ────────────────────────────────────────────────────────
+   The 3D cards are canvas pixels, so the project pages had no reachable link
+   anywhere in the document. This list carries one anchor per project: off
+   screen at rest, and each link shows itself when tabbed to. It is also what
+   search engines follow, since nothing else points at /project.html. */
+#project-index {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#project-index:focus-within {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: auto;
+  max-width: 320px;
+  height: auto;
+  max-height: 100vh;
+  overflow-y: auto;
+  clip-path: none;
+  padding: 12px 18px 16px;
+  background: #0d0a0a;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+#project-index li {
+  line-height: 1.5;
+}
+
+#project-index h2 {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 4px;
+}
+
+#project-index ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#project-index a {
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Nothing in the interface showed focus at all. One visible ring everywhere. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid rgba(214, 120, 244, 0.9);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
