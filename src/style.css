@@ -1407,9 +1407,13 @@ body:not(.has-video-bg) .page-body.project .tag {
 .cluster-label {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 13px;
+  /* Same type as the arrange buttons, minus the pill — set larger, since it
+     now sits in the middle of its cluster rather than labelling it from above. */
+  font-family: inherit;
+  font-size: 26px;
   font-style: italic;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   color: rgba(150, 118, 186, 0.7);
   text-shadow: 0 0 10px rgba(199, 170, 232, 0.55);
   white-space: nowrap;
@@ -1640,4 +1644,30 @@ button:focus-visible,
   outline: 2px solid rgba(214, 120, 244, 0.9);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ── Links on dark sequential sections ──────────────────────────────────────
+   Body text is overridden to white on every sequential section, but links
+   kept .project-text a's near-black (#111) — invisible on a dark ground.
+   The DOI on the ARchive chapter was the clearest casualty. */
+.seq-project--light .project-text a,
+.seq-project--video .project-text a,
+.seq-project--image .project-text a {
+  color: rgba(255, 255, 255, 0.92);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.seq-project--light .project-text a:hover,
+.seq-project--video .project-text a:hover,
+.seq-project--image .project-text a:hover {
+  color: #fff;
+  text-decoration-color: rgba(255, 255, 255, 0.6);
+}
+
+/* A dimmed project is filtered out and its section is display:none, so the
+   link had nowhere to go — clicking it jumped to an arbitrary position. */
+.seq-nav-item--dimmed {
+  pointer-events: none;
+  cursor: default;
 }

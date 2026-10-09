@@ -175,6 +175,19 @@ cards.forEach((card) => {
 // A Raycaster shoots an invisible ray from the camera through the mouse cursor
 // and finds which 3D objects it intersects — like Physics.Raycast in Unity.
 
+let activeCategory = 'all';
+
+// Cards the tag filter has dimmed are still solid geometry, so the raycaster
+// would happily hit a ghost card at 8% opacity and navigate to it. Everything
+// that picks a card goes through this list instead.
+function pickableCards() {
+  if (activeCategory === 'all') return cards;
+  return cards.filter((c) => {
+    const cat = c.userData.project.category;
+    return Array.isArray(cat) ? cat.includes(activeCategory) : cat === activeCategory;
+  });
+}
+
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(); // mouse position in -1..1 normalized coords
 
@@ -232,7 +245,7 @@ renderer.domElement.addEventListener('pointerup', (e) => {
 
   updatePointer(e.clientX, e.clientY);
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(cards);
+  const hits = raycaster.intersectObjects(pickableCards());
   if (hits.length > 0) {
     const { project } = hits[0].object.userData;
     window.location.href = `/project.html?id=${project.slug}`;
@@ -243,7 +256,7 @@ renderer.domElement.addEventListener('pointerup', (e) => {
 
 function checkHover() {
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(cards);
+  const hits = raycaster.intersectObjects(pickableCards());
 
   if (hits.length > 0) {
     const card = hits[0].object;
@@ -285,6 +298,15 @@ function applySeqFilter(category) {
     const cat = p && p.category;
     const match = category === 'all' || (cat && (Array.isArray(cat) ? cat.includes(category) : cat === category));
     item.classList.toggle('seq-nav-item--dimmed', !match);
+    // A filtered-out project has its section hidden, so following its link
+    // would scroll to nothing. Take it out of the tab order too.
+    if (match) {
+      item.removeAttribute('aria-disabled');
+      item.removeAttribute('tabindex');
+    } else {
+      item.setAttribute('aria-disabled', 'true');
+      item.setAttribute('tabindex', '-1');
+    }
   });
   // Scroll sections: hide non-matching
   seqView.querySelectorAll('.seq-project').forEach((section) => {
@@ -298,7 +320,11 @@ function applySeqFilter(category) {
 
 document.querySelectorAll('.filter-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const category = btn.dataset.category;
+    // Clicking the tag that is already on clears it, so the same button both
+    // applies and removes a filter — no trip back to 'all'.
+    const clicked = btn.dataset.category;
+    const category = (clicked === activeCategory && clicked !== 'all') ? 'all' : clicked;
+
     document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
     // 'all' clears all active states — no button highlighted, all cards visible
     if (category !== 'all') btn.classList.add('active');
@@ -608,6 +634,9 @@ document.querySelectorAll('.view-toggle').forEach((btn) => {
       persistentLabels.forEach(({ el }) => { el.style.display = 'none'; });
       seqView.classList.add('active');
       document.body.classList.add('view-sequential');
+      // The sidebar has no layout until the view is shown, so the rail could
+      // not be measured while it was hidden. Draw it now that it has a box.
+      requestAnimationFrame(renderSeqGroups);
     } else {
       document.getElementById('card-label').style.display = '';
       cards.forEach((c) => { c.visible = true; });
@@ -626,7 +655,6 @@ document.querySelectorAll('.view-toggle').forEach((btn) => {
 // whenever either control changes.
 
 let activeSort = 'free';
-let activeCategory = 'all';
 
 // Cluster headings, drawn as DOM over the canvas and reprojected each frame.
 const clusterLayer = document.createElement('div');
@@ -695,6 +723,8 @@ function applySeqSort() {
 function renderSeqGroups() {
   const rail = seqView.querySelector('.seq-groups');
   if (!rail) return;
+  // Nothing to measure while the view is hidden — it would compute zeros.
+  if (!seqView.classList.contains('active')) return;
   rail.innerHTML = '';
 
   const grouped = activeSort === 'chronological' || activeSort === 'medium';

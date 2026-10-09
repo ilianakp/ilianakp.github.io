@@ -87,19 +87,25 @@ export function setArrangement(cards, mode, category) {
   }
 
   if (mode === 'chronological') {
-    // A timeline: one column per year, oldest at the left. Cards stack inside
-    // their year, so the reading is a line across the screen rather than depth.
+    // A timeline: one column per year, oldest at the left. Columns are packed
+    // to the card width plus a small gap and the whole run is centred, rather
+    // than spread across the full frame — otherwise the gaps dwarf the cards.
     const years = [...new Set(visible.map((c) => c.userData.project.year ?? 0))].sort((a, b) => a - b);
     const usableW = frameW() * 0.94;
     const usableH = frameH() * 0.70;
-    const colW = usableW / years.length;
     const tallest = Math.max(...years.map((y) => visible.filter((c) => c.userData.project.year === y).length));
-    const rowH = usableH / Math.max(1, tallest);
-    const scale = Math.max(0.28, Math.min(1, (Math.min(colW, rowH) / ctx.cardMax) * 0.9));
+    const GAP = 1.1; // column pitch as a multiple of card width
+
+    const fitW = usableW / (years.length * GAP);
+    const fitH = usableH / Math.max(1, tallest);
+    const scale = Math.max(0.28, Math.min(1, Math.min(fitW, fitH) / ctx.cardMax * 0.98));
+    const colW = ctx.cardMax * scale * GAP;
+    const rowH = ctx.cardMax * scale * GAP;
+    const startX = -colW * (years.length - 1) / 2;
 
     years.forEach((year, col) => {
       const group = visible.filter((c) => c.userData.project.year === year);
-      const cx = -usableW / 2 + colW * (col + 0.5);
+      const cx = startX + colW * col;
       group.forEach((card, row) => {
         targets.set(card, {
           x: cx,
@@ -112,19 +118,24 @@ export function setArrangement(cards, mode, category) {
 
     return years.map((year, col) => ({
       label: String(year),
-      x: -usableW / 2 + colW * (col + 0.5),
-      y: usableH / 2 + rowH * 0.22 - ctx.navOffset,
+      x: startX + colW * col,
+      y: usableH / 2 + rowH * 0.3 - ctx.navOffset,
       z: -20,
     }));
   }
 
   if (mode === 'shuffle') {
+    // Cards are composed to fill the screen at their home positions, so at
+    // full size a random scatter overflows the frame. Give each one the share
+    // of the viewport it actually has, and size it to fit that.
+    const perCard = Math.sqrt((frameW() * frameH() * 0.55) / Math.max(1, visible.length));
+    const scale = Math.max(0.3, Math.min(1, perCard / ctx.cardMax));
     visible.forEach((card) => {
       targets.set(card, {
-        x: (Math.random() * 2 - 1) * ctx.visibleHalfW * 0.88,
-        y: (Math.random() * 2 - 1) * ctx.visibleHalfH * 0.66 - ctx.navOffset * 0.5,
+        x: (Math.random() * 2 - 1) * ctx.visibleHalfW * 0.82,
+        y: (Math.random() * 2 - 1) * ctx.visibleHalfH * 0.62 - ctx.navOffset * 0.5,
         z: -90 + Math.random() * 100,
-        scale: 1,
+        scale,
       });
     });
     return [];
@@ -134,21 +145,53 @@ export function setArrangement(cards, mode, category) {
     const groups = MEDIA_ORDER
       .map((label) => ({ label, items: visible.filter((c) => c.userData.project.medium === label) }))
       .filter((g) => g.items.length);
+    if (!groups.length) return [];
 
     const cols = Math.min(3, groups.length);
     const rows = Math.ceil(groups.length / cols);
-    const usableW = frameW() * 0.94;
-    const usableH = frameH() * 0.74;
-    const regionW = usableW / cols;
-    const regionH = usableH / rows;
+    const usableW = frameW() * 1.0;
+    const usableH = frameH() * 0.92;
+    const GAP = 0.68;   // card pitch inside a cluster — well under 1, so cards tuck together
+    const BETWEEN = 1.15; // breathing room between clusters, in card widths
+
+    // Widest cluster decides the scale: every cluster is a small grid, and the
+    // row of clusters plus the gaps between them has to fit the frame.
+    const gridOf = (n) => ({ c: Math.ceil(Math.sqrt(n)), r: Math.ceil(n / Math.ceil(Math.sqrt(n))) });
+    const widest = Math.max(...groups.map((g) => gridOf(g.items.length).c));
+    const tallest = Math.max(...groups.map((g) => gridOf(g.items.length).r));
+    const fitW = usableW / (cols * (widest * GAP) + (cols - 1) * (BETWEEN - 1));
+    const fitH = usableH / (rows * (tallest * GAP + 0.3));
+    // Let clusters grow past the composed card size — the medium view should
+    // fill the frame rather than sit in the middle of it.
+    const scale = Math.max(0.28, Math.min(1.45, Math.min(fitW, fitH) / ctx.cardMax));
+
+    const step = ctx.cardMax * scale * GAP;
+    const colPitch = widest * step + ctx.cardMax * scale * (BETWEEN - 1);
+    const rowPitch = tallest * step + ctx.cardMax * scale * 0.42;
+    const startX = -colPitch * (cols - 1) / 2;
+    const startY = rowPitch * (rows - 1) / 2 - ctx.navOffset;
 
     return groups.map((group, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const cx = -usableW / 2 + regionW * (col + 0.5);
-      const cy = usableH / 2 - regionH * (row + 0.5) - ctx.navOffset;
-      layOutRegion(group.items, cx, cy, regionW, regionH, -30);
-      return { label: group.label, x: cx, y: cy + regionH * 0.42, z: -30 };
+      const cx = startX + colPitch * col;
+      const cy = startY - rowPitch * row;
+      const g = gridOf(group.items.length);
+
+      group.items.forEach((card, idx) => {
+        const c = idx % g.c;
+        const r = Math.floor(idx / g.c);
+        const seed = card.userData.index * 2.399963;
+        targets.set(card, {
+          x: cx + (c - (g.c - 1) / 2) * step + Math.sin(seed) * step * 0.04,
+          y: cy - (r - (g.r - 1) / 2) * step + Math.cos(seed * 1.7) * step * 0.04,
+          z: -30 + Math.sin(seed * 3.1) * 10,
+          scale,
+        });
+      });
+
+      // Sit the name in the middle of its cluster rather than above it.
+      return { label: group.label, x: cx, y: cy, z: -30 };
     });
   }
 
