@@ -13,6 +13,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { createCards } from './cards.js';
 import { initTargets, applyFilter, animateFilters } from './filters.js';
+import { initArrange, setArrangement, animateArrange, MEDIA_ORDER } from './arrange.js';
 import './style.css';
 
 // ─── Scene setup ─────────────────────────────────────────────────────────────
@@ -92,7 +93,8 @@ scene.add(sphereLines);
 
 // ─── Project cards ────────────────────────────────────────────────────────────
 
-const { cards, spreadX, spreadY } = createCards(scene, camera);
+const { cards, spreadX, spreadY, cardMax, navOffset, visibleHalfW, visibleHalfH } = createCards(scene, camera);
+initArrange(cards, { spreadX, spreadY, cardMax, navOffset, visibleHalfW, visibleHalfH });
 initTargets(cards);
 
 // ─── Intro zoom-in animation ──────────────────────────────────────────────────
@@ -300,8 +302,10 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
     document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
     // 'all' clears all active states — no button highlighted, all cards visible
     if (category !== 'all') btn.classList.add('active');
+    activeCategory = category;
     applyFilter(cards, category);
     applySeqFilter(category);
+    applyArrangement();
     seqView.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });
@@ -453,7 +457,7 @@ const navItems = orderedProjects.map((p) =>
 // not as a separate column — that way every segment is exactly as tall as its
 // own title and the two can never drift out of alignment.
 seqView.innerHTML = `
-  <nav class="seq-sidebar">${navItems}</nav>
+  <nav class="seq-sidebar"><div class="seq-groups" aria-hidden="true"></div>${navItems}</nav>
   <div class="seq-inner">${orderedProjects.map(renderSeqProject).join('')}</div>`;
 
 // Lazy-mount video iframes: insert the iframe only when its section is near the
@@ -603,18 +607,146 @@ document.querySelectorAll('.view-toggle').forEach((btn) => {
       cards.forEach((c) => { c.visible = false; });
       persistentLabels.forEach(({ el }) => { el.style.display = 'none'; });
       seqView.classList.add('active');
+      document.body.classList.add('view-sequential');
     } else {
       document.getElementById('card-label').style.display = '';
       cards.forEach((c) => { c.visible = true; });
       persistentLabels.forEach(({ el }) => { el.style.display = ''; });
       seqView.classList.remove('active');
+      document.body.classList.remove('view-sequential');
     }
+  });
+});
+
+
+// ─── Sorting (spatial clusters + sequential order) ────────────────────────────
+//
+// The tag filter and the sort work together: the filter decides which cards are
+// visible, the sort arranges whatever is left. Arrangements are re-applied
+// whenever either control changes.
+
+let activeSort = 'free';
+let activeCategory = 'all';
+
+// Cluster headings, drawn as DOM over the canvas and reprojected each frame.
+const clusterLayer = document.createElement('div');
+clusterLayer.className = 'cluster-labels';
+document.body.appendChild(clusterLayer);
+let clusterLabels = [];
+
+function updateClusterLabels() {
+  if (!clusterLabels.length) return;
+  clusterLabels.forEach(({ el, pos }) => {
+    const p = pos.clone().project(camera);
+    el.style.left = ((p.x * 0.5 + 0.5) * window.innerWidth) + 'px';
+    el.style.top = ((-p.y * 0.5 + 0.5) * window.innerHeight) + 'px';
+    el.style.opacity = p.z < 1 ? 1 : 0;
+  });
+}
+
+function applyArrangement() {
+  const groups = setArrangement(cards, activeSort, activeCategory);
+  clusterLayer.innerHTML = '';
+  clusterLabels = groups.map((g) => {
+    const el = document.createElement('div');
+    el.className = 'cluster-label';
+    el.textContent = g.label;
+    clusterLayer.appendChild(el);
+    return { el, pos: new THREE.Vector3(g.x, g.y, g.z) };
+  });
+  applySeqSort();
+}
+
+// Sequential view: reorder by CSS order so nothing is torn out of the DOM —
+// observers, mounted video iframes and scroll positions all survive.
+function applySeqSort() {
+  const order = (p) => {
+    if (activeSort === 'chronological') return (p.year ?? 0);
+    if (activeSort === 'medium') return p.medium || '';
+    return null;
+  };
+  const list = [...orderedProjects];
+  if (activeSort === 'chronological') {
+    list.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)); // newest first
+  } else if (activeSort === 'medium') {
+    list.sort((a, b) => MEDIA_ORDER.indexOf(a.medium) - MEDIA_ORDER.indexOf(b.medium));
+  } else if (activeSort === 'shuffle') {
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+  }
+  const position = new Map(list.map((p, i) => [p.slug, i]));
+  seqView.querySelectorAll('.seq-project').forEach((sec) => {
+    sec.style.order = position.get(sec.id.replace('seq-', '')) ?? 0;
+  });
+  seqView.querySelectorAll('.seq-nav-item').forEach((item) => {
+    item.style.order = position.get(item.dataset.slug) ?? 0;
+  });
+  void order;
+  requestAnimationFrame(renderSeqGroups);
+}
+
+
+// Draw the group rail: one vertical line per run of projects sharing a year or
+// a medium, with the group name set vertically beside it. Measured from the
+// laid-out nav items rather than from the data, so it cannot drift out of step
+// with the list — including when a tag filter dims part of it.
+function renderSeqGroups() {
+  const rail = seqView.querySelector('.seq-groups');
+  if (!rail) return;
+  rail.innerHTML = '';
+
+  const grouped = activeSort === 'chronological' || activeSort === 'medium';
+  seqSidebar.classList.toggle('has-groups', grouped);
+  if (!grouped) return;
+
+  const keyOf = (slug) => {
+    const p = projects.find((x) => x.slug === slug);
+    if (!p) return '';
+    return activeSort === 'chronological' ? String(p.year ?? '') : (p.medium || '');
+  };
+
+  const items = [...seqSidebar.querySelectorAll('.seq-nav-item')]
+    .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+    .sort((a, b) => a.rect.top - b.rect.top);
+  if (!items.length) return;
+
+  const base = seqSidebar.getBoundingClientRect().top;
+  let run = [items[0]];
+  const runs = [];
+  for (let i = 1; i < items.length; i++) {
+    if (keyOf(items[i].el.dataset.slug) === keyOf(run[0].el.dataset.slug)) run.push(items[i]);
+    else { runs.push(run); run = [items[i]]; }
+  }
+  runs.push(run);
+
+  runs.forEach((group) => {
+    const first = group[0].rect;
+    const last = group[group.length - 1].rect;
+    const el = document.createElement('div');
+    el.className = 'seq-group';
+    el.style.top = (first.top - base) + 'px';
+    el.style.height = (last.bottom - first.top) + 'px';
+    el.innerHTML = `<span class="seq-group-label">${keyOf(group[0].el.dataset.slug)}</span>`
+                 + `<span class="seq-group-line"></span>`;
+    rail.appendChild(el);
+  });
+}
+
+document.querySelectorAll('.sort-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sort-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSort = btn.dataset.sort;
+    applyArrangement();
   });
 });
 
 // ─── Resize handling ──────────────────────────────────────────────────────────
 
 window.addEventListener('resize', () => {
+  requestAnimationFrame(renderSeqGroups);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -646,6 +778,8 @@ function animate() {
   if (camera.position.y >  spreadY) { camera.position.y =  spreadY; controls.target.y =  spreadY; }
   else if (camera.position.y < -spreadY) { camera.position.y = -spreadY; controls.target.y = -spreadY; }
   animateFilters(cards);          // smoothly animate filter opacity/scale
+  animateArrange(cards);          // smoothly animate sort positions
+  updateClusterLabels();          // reproject cluster headings
 
   // Mobile: reproject each card's label to its current screen position
   // and sync label opacity with the card's filter opacity

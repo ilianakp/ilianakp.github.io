@@ -104,7 +104,7 @@ body.light .view-toggle.active {
   right: 0;
   z-index: 10;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 18px 28px;
   min-height: var(--nav-row-h);
@@ -128,6 +128,7 @@ body.light .view-toggle.active {
   display: flex;
   gap: 24px;
   align-items: center;
+  min-height: var(--nav-row-h);
 }
 
 .nav-left a:hover {
@@ -184,6 +185,7 @@ body.light .nav-label {
   display: flex;
   gap: 10px;
   align-items: center;
+  min-height: var(--nav-row-h);
 }
 
 /* Category filter bubble buttons */
@@ -1335,4 +1337,245 @@ body:not(.has-video-bg) .next-project-link:hover .next-label {
    scene, which made it invisible here. Video/image heroes keep the white. */
 body:not(.has-video-bg) .page-body.project .tag {
   color: rgba(0, 0, 0, 0.45);
+}
+
+/* ── Sort controls + cluster headings ───────────────────────────────────────
+   The view toggle and the sort controls stack as two rows in the nav centre.
+   #nav therefore aligns to the top, and the left/right groups keep their own
+   row height so index/info stay on the same line as on the sub-pages. */
+
+.nav-center {
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nav-center-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Same metrics as .view-toggle above, so the two rows read as one control
+   block; lilac distinguishes arranging from switching view. */
+.sort-btn {
+  font-family: inherit;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  padding: 6px 16px;
+  background: transparent;
+  white-space: nowrap;
+  /* Every control is lit; the selected one simply burns brighter. */
+  color: rgba(226, 178, 238, 0.85);
+  text-shadow: 0 0 9px rgba(226, 160, 240, 0.7), 0 0 18px rgba(206, 110, 232, 0.3);
+  box-shadow: 0 0 11px rgba(226, 160, 240, 0.28), inset 0 0 9px rgba(226, 160, 240, 0.14);
+  transition: color 0.25s, background 0.25s, border-color 0.25s,
+              box-shadow 0.25s, text-shadow 0.25s;
+}
+
+.sort-btn:hover {
+  color: rgba(238, 206, 250, 0.95);
+  text-shadow: 0 0 12px rgba(232, 172, 246, 0.85), 0 0 22px rgba(206, 110, 232, 0.4);
+  box-shadow: 0 0 14px rgba(226, 160, 240, 0.38), inset 0 0 11px rgba(226, 160, 240, 0.18);
+}
+
+.sort-btn.active {
+  color: #f2d9ff;
+  background: rgba(222, 150, 240, 0.14);
+  border-color: rgba(228, 172, 248, 0.8);
+  text-shadow: 0 0 14px rgba(236, 190, 255, 1), 0 0 30px rgba(206, 110, 246, 0.7),
+               0 0 48px rgba(192, 90, 238, 0.35);
+  box-shadow: 0 0 22px rgba(214, 140, 244, 0.6), 0 0 44px rgba(200, 110, 238, 0.28),
+              inset 0 0 14px rgba(214, 140, 244, 0.26);
+}
+
+/* Headings floating over each cluster, reprojected every frame. */
+.cluster-labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.cluster-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: rgba(150, 118, 186, 0.7);
+  text-shadow: 0 0 10px rgba(199, 170, 232, 0.55);
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+
+/* Sequential view reorders with CSS order, so both columns must be flex. */
+.seq-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.seq-project {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .nav-center {
+    gap: 6px;
+  }
+  .sort-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+}
+
+/* Spatial view sits on warm light grey, where soft lilac washes out — the
+   arrange controls burn much brighter there. The sequential view keeps the
+   quieter lilac above, since its sections are dark. */
+body:not(.view-sequential) .sort-btn {
+  color: rgba(159, 69, 176, 0.9);
+  border-color: rgba(198, 86, 222, 0.6);
+  text-shadow: 0 0 10px rgba(226, 130, 250, 0.75), 0 0 20px rgba(196, 80, 232, 0.35);
+  box-shadow: 0 0 13px rgba(214, 120, 244, 0.35), inset 0 0 10px rgba(228, 146, 252, 0.18);
+}
+
+body:not(.view-sequential) .sort-btn:hover {
+  color: rgb(145, 51, 169);
+  border-color: rgba(178, 46, 206, 0.85);
+  text-shadow: 0 0 14px rgba(228, 150, 252, 0.95), 0 0 26px rgba(196, 80, 232, 0.5);
+  box-shadow: 0 0 18px rgba(214, 120, 244, 0.5), inset 0 0 13px rgba(228, 146, 252, 0.24);
+}
+
+body:not(.view-sequential) .sort-btn.active {
+  color: #8f3ba4;
+  background: rgba(214, 120, 244, 0.18);
+  border-color: rgba(157, 57, 180, 0.95);
+  text-shadow: 0 0 16px rgba(234, 168, 255, 1), 0 0 34px rgba(200, 70, 240, 0.8),
+               0 0 56px rgba(186, 50, 232, 0.4);
+  box-shadow: 0 0 26px rgba(208, 100, 242, 0.7), 0 0 52px rgba(196, 80, 236, 0.35),
+              inset 0 0 16px rgba(228, 146, 252, 0.3);
+}
+
+/* Cluster headings only ever appear in the spatial view. */
+.cluster-label {
+  color: rgba(154, 40, 186, 0.85);
+  text-shadow: 0 0 12px rgba(228, 140, 250, 0.8);
+}
+
+/* The ↕ marker belongs to the arrange controls, so it takes their colour and
+   halo. Values mirror .sort-btn above — change them together. */
+.nav-sort .nav-label,
+body.light .nav-sort .nav-label {
+  color: rgba(226, 178, 238, 0.85);
+  text-shadow: 0 0 9px rgba(226, 160, 240, 0.7), 0 0 18px rgba(206, 110, 232, 0.3);
+}
+
+body:not(.view-sequential) .nav-sort .nav-label,
+body.light:not(.view-sequential) .nav-sort .nav-label {
+  color: rgba(159, 69, 176, 0.9);
+  text-shadow: 0 0 10px rgba(226, 130, 250, 0.75), 0 0 20px rgba(196, 80, 232, 0.35);
+}
+
+/* Cluster headings are a spatial-view device only. They are position: fixed,
+   so without this they stayed on screen over the sequential sections. */
+body.view-sequential .cluster-labels {
+  display: none;
+}
+
+/* ── Nav must not swallow clicks ────────────────────────────────────────────
+   #nav is a full-width fixed bar and, with two control rows, it is ~114px
+   tall. Its empty areas were covering the top of the sequential project list,
+   which made the first item hard to hit. Only its controls take the pointer. */
+#nav {
+  pointer-events: none;
+}
+
+#nav a,
+#nav button,
+#nav .nav-label {
+  pointer-events: auto;
+}
+
+/* Roomier hit targets in the project list. */
+.seq-nav-item {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* ── Group rail (sequential view) ───────────────────────────────────────────
+   When a sort is active, each run of projects sharing a year or a medium gets
+   a vertical line at the far left, with the group name set vertically beside
+   it. Built from the laid-out nav items, so it always matches the list. */
+.seq-groups {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  width: 34px;
+  pointer-events: none;
+}
+
+.seq-sidebar.has-groups {
+  padding-left: 66px;
+}
+
+.seq-group {
+  position: absolute;
+  left: 0;
+  width: 34px;
+}
+
+.seq-group-line {
+  position: absolute;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(226, 178, 238, 0.55);
+}
+
+.seq-group-label {
+  position: absolute;
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: rgba(226, 178, 238, 0.8);
+  text-shadow: 0 0 8px rgba(206, 110, 232, 0.35);
+}
+
+/* The list is too tall to centre once titles wrap and groups add padding —
+   centring would clip the top beyond reach. Start at the top and scroll; the
+   rail is positioned inside the sidebar, so it scrolls with the list. */
+.seq-sidebar {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.seq-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* A long medium name is taller than a one-project group, so cap the label to
+   its group and let it trail off rather than collide with its neighbour. */
+.seq-group-label {
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

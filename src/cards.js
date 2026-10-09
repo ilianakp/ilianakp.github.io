@@ -159,6 +159,7 @@ export function createCards(scene, camera) {
     cards.push(mesh);
   });
 
-  return { cards, spreadX, spreadY };
+  const navOffset = visibleHalfH * (isMobile ? 0.50 : 0.22);
+  return { cards, spreadX, spreadY, cardMax, navOffset, visibleHalfW, visibleHalfH };
 }
 

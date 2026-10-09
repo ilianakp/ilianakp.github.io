@@ -9,7 +9,7 @@ const targets = new Map(); // mesh → { opacity: 1, scale: 1 }
 
 export function initTargets(cards) {
   cards.forEach((card) => {
-    targets.set(card, { opacity: 1, scale: 1 });
+    targets.set(card, { opacity: 1 });
   });
 }
 
@@ -21,10 +21,9 @@ export function applyFilter(cards, activeCategory) {
     const visible = activeCategory === 'all' ||
       (Array.isArray(cat) ? cat.includes(activeCategory) : cat === activeCategory);
     const t = targets.get(card);
+    // Filtering fades only. Size belongs to arrange.js, which shrinks cards
+    // when they cluster — if both wrote card.scale they would fight.
     t.opacity = visible ? 1 : 0.08;
-    // Filtering fades only — cards keep their size, so the scene doesn't
-    // reflow and depth stays the only thing driving how big a card reads.
-    t.scale = 1;
   });
 }
 
@@ -41,8 +40,6 @@ export function animateFilters(cards) {
       mat.opacity += (t.opacity - mat.opacity) * speed;
     }
 
-    // Lerp scale (uniform)
-    card.scale.x += (t.scale - card.scale.x) * speed;
-    card.scale.y += (t.scale - card.scale.y) * speed;
+
   });
 }
