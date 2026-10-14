@@ -712,7 +712,7 @@ export const projects = [
     imageBg: '/images/long-live-the-web/wall-blurred.jpg',
     text: `
       <p>Collective practices against the algorithm<br>
-      In collaboration with <a href="https://softer.metalabel.com/" target="_blank" rel="noopener">SOFTER</a><br>
+      In collaboration with <a href="https://www.softer.global/" target="_blank" rel="noopener">SOFTER</a><br>
       Hosted and co-organised with the team of Klif and Alexandra Olympia Peristeraki<br>
       Athens, GR, 2026<br>
       Role: Co-organiser, workshop facilitation, web development</p>
